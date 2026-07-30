@@ -1,0 +1,572 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+// ─── USER ────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String
+  phone         String?
+  avatar        String?
+  role          String  @default("STUDENT")
+  isActive      Boolean   @default(true)
+  targetExam    String?
+  language      String    @default("en")
+  emailVerified Boolean   @default(false)
+  otp           String?
+  otpExpiry     DateTime?
+  googleId      String?   @unique
+  phoneVerified Boolean   @default(false)
+  phoneOtp      String?
+  phoneOtpExpiry DateTime?
+  refreshToken  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  orders           Order[]
+  attempts         Attempt[]
+  bookmarks        Bookmark[]
+  tickets          SupportTicket[]
+  notifications    Notification[]
+  authoredNotes    Note[]          @relation("AuthoredNotes")
+  createdQuestions Question[]      @relation("CreatedQuestions")
+  blogPosts        BlogPost[]
+  uploadedMedia    MediaFile[]
+  ticketReplies    TicketReply[]
+
+  @@map("users")
+}
+
+// ─── LAYER 1: EXAM TAXONOMY ─────────────────────────────────────────────────
+
+// exam_family (top-level grouping) is stored as an enum field on Exam
+// exam_name is the Exam model itself
+// exam_stage is an enum field on Exam
+
+model Exam {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  slug        String     @unique
+  shortName   String?
+  description String?
+  icon        String?
+  color       String?
+  family      String @default("Other")
+  stage       String?
+  isActive    Boolean    @default(true)
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  subjects    Subject[]
+  notes       Note[]
+  questions   Question[]
+  tests       Test[]
+  examPages   ExamPage[]
+
+  @@map("exams")
+}
+
+// ─── LAYER 3: SUBJECT TAXONOMY ──────────────────────────────────────────────
+
+// Subject → Paper → Chapter → Topic → Subtopic
+
+model Subject {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String
+  description String?
+  icon        String?
+  examId      String
+  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  papers      Paper[]
+  chapters    Chapter[]
+  topics      Topic[]
+  notes       Note[]
+  questions   Question[]
+
+  @@unique([examId, name])
+  @@map("subjects")
+}
+
+model Paper {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String
+  description String?
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chapters    Chapter[]
+
+  @@unique([subjectId, name])
+  @@map("papers")
+}
+
+model Chapter {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String
+  description String?
+  paperId     String?
+  paper       Paper?   @relation(fields: [paperId], references: [id], onDelete: SetNull)
+  subjectId   String?
+  subject     Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  topics      Topic[]
+  notes       Note[]
+  questions   Question[]
+  ncertLinks  NcertChapterLink[]
+
+  @@map("chapters")
+}
+
+model Topic {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String
+  description String?
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  chapterId   String?
+  chapter     Chapter? @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subTopics   Subtopic[]
+  notes       Note[]
+  questions   Question[]
+
+  @@unique([subjectId, name])
+  @@map("topics")
+}
+
+model Subtopic {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String
+  description String?
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  questions   Question[]
+
+  @@unique([topicId, name])
+  @@map("subtopics")
+}
+
+// ─── NCERT (content foundation, not just test series) ──────────────────────
+
+model NcertBook {
+  id        String   @id @default(uuid())
+  class     Int
+  subject   String
+  name      String
+  slug      String   @unique
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chapters  NcertChapter[]
+
+  @@map("ncert_books")
+}
+
+model NcertChapter {
+  id          String   @id @default(uuid())
+  bookId      String
+  book        NcertBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String
+  summary     String?
+  content     String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  links       NcertChapterLink[]
+  linkedTests Test[]
+
+  @@unique([bookId, name])
+  @@map("ncert_chapters")
+}
+
+model NcertChapterLink {
+  id             String   @id @default(uuid())
+  ncertChapterId String
+  ncertChapter   NcertChapter @relation(fields: [ncertChapterId], references: [id], onDelete: Cascade)
+  chapterId      String?
+  chapter        Chapter? @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  noteId         String?
+  note           Note?    @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  questionId     String?
+  question       Question? @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+
+  @@map("ncert_chapter_links")
+}
+
+// ─── NOTE ────────────────────────────────────────────────────────────────────
+
+model Note {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  summary     String?
+  content     String 
+  contentType String   @default("html")
+  isPremium   Boolean  @default(false)
+  isPublished Boolean  @default(false)
+  viewCount   Int      @default(0)
+  downloadUrl String?
+  thumbnail   String?
+  examId      String?
+  exam        Exam?    @relation(fields: [examId], references: [id])
+  subjectId   String?
+  subject     Subject? @relation(fields: [subjectId], references: [id])
+  chapterId   String?
+  chapter     Chapter? @relation(fields: [chapterId], references: [id])
+  topicId     String?
+  topic       Topic?   @relation(fields: [topicId], references: [id])
+  authorId    String
+  author      User     @relation("AuthoredNotes", fields: [authorId], references: [id])
+  tags        String?
+  metaTitle   String?
+  metaDesc    String?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bookmarks    Bookmark[]
+  ncertLinks   NcertChapterLink[]
+
+  @@map("notes")
+}
+
+// ─── QUESTION ────────────────────────────────────────────────────────────────
+
+model Question {
+  id           String     @id @default(uuid())
+  text         String   
+  options      String   
+  correctAns   String
+  explanation  String?  
+  questionType String     @default("mcq")
+  difficulty   String     @default("medium")
+  year         Int?
+  source       String?
+  sourceType   String @default("MIXED")
+  isPublished  Boolean    @default(false)
+  examId       String?
+  exam         Exam?      @relation(fields: [examId], references: [id])
+  subjectId    String?
+  subject      Subject?   @relation(fields: [subjectId], references: [id])
+  chapterId    String?
+  chapter      Chapter?   @relation(fields: [chapterId], references: [id])
+  topicId      String?
+  topic        Topic?     @relation(fields: [topicId], references: [id])
+  subtopicId   String?
+  subtopic     Subtopic?  @relation(fields: [subtopicId], references: [id])
+  tags         String?
+  createdById  String
+  createdBy    User       @relation("CreatedQuestions", fields: [createdById], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  testQuestions TestQuestion[]
+  bookmarks     Bookmark[]
+  ncertLinks    NcertChapterLink[]
+
+  @@map("questions")
+}
+
+// ─── TEST ───────────────────────────────────────────────────────────────────
+
+model Test {
+  id            String     @id @default(uuid())
+  title         String
+  slug          String     @unique
+  description   String?
+  testType      String   @default("FULL_MOCK")
+  testMode      String   @default("TIMED")
+  accessType    String @default("FREE")
+  duration      Int
+  totalMarks    Int
+  passingMarks  Int?
+  negativeMark  Float?
+  isFree        Boolean    @default(false)
+  isPublished   Boolean    @default(false)
+  status        String @default("DRAFT")
+  examId        String?
+  exam          Exam?      @relation(fields: [examId], references: [id])
+  ncertChapterId String?
+  ncertChapter  NcertChapter? @relation(fields: [ncertChapterId], references: [id])
+  price         Float?
+  maxAttempts   Int        @default(1)
+  instructions  String?  
+  scheduledAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  questions     TestQuestion[]
+  attempts      Attempt[]
+
+  @@map("tests")
+}
+
+model TestQuestion {
+  id         String   @id @default(uuid())
+  testId     String
+  test       Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  marks      Int      @default(1)
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@unique([testId, questionId])
+  @@map("test_questions")
+}
+
+model Attempt {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testId      String
+  test        Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  answers     String?
+  score       Float?
+  totalMarks  Float?
+  accuracy    Float?
+  percentile  Float?
+  rank        Int?
+  timeTaken   Int?
+  status      String   @default("in_progress")
+  startedAt   DateTime @default(now())
+  submittedAt DateTime?
+
+  @@map("attempts")
+}
+
+// ─── PLAN / ORDER / COUPON ──────────────────────────────────────────────────
+
+model Plan {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  description     String?
+  price           Float
+  discountedPrice Float?
+  durationDays    Int
+  testAccess      String   @default("all")
+  features        String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orders          Order[]
+
+  @@map("plans")
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  orderId     String      @unique
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  planId      String
+  plan        Plan        @relation(fields: [planId], references: [id])
+  amount      Float
+  status      String @default("PENDING")
+  couponId    String?
+  coupon      Coupon?     @relation(fields: [couponId], references: [id])
+  paymentRef  String?
+  paidAt      DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model Coupon {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  discountPct Float
+  maxUses     Int?
+  usedCount   Int      @default(0)
+  minAmount   Float?
+  maxDiscount Float?
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  orders      Order[]
+
+  @@map("coupons")
+}
+
+// ─── BOOKMARK ───────────────────────────────────────────────────────────────
+
+model Bookmark {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  noteId     String?
+  note       Note?    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  questionId String?
+  question   Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@map("bookmarks")
+}
+
+// ─── NOTIFICATION ───────────────────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String 
+  type      String   @default("info")
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+// ─── SUPPORT ────────────────────────────────────────────────────────────────
+
+model SupportTicket {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  subject     String
+  message     String     
+  status      String @default("OPEN")
+  assignedTo  String?
+  priority    String       @default("medium")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  replies     TicketReply[]
+
+  @@map("support_tickets")
+}
+
+model TicketReply {
+  id        String   @id @default(uuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  message   String 
+  isStaff   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("ticket_replies")
+}
+
+// ─── AUDIT / MEDIA / ADS / BLOG ────────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model AdPlacement {
+  id        String   @id @default(uuid())
+  name      String
+  zone      String
+  code      String 
+  isActive  Boolean  @default(true)
+  page      String?
+  position  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ad_placements")
+}
+
+model MediaFile {
+  id           String   @id @default(uuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@map("media_files")
+}
+
+model BlogPost {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  content     String 
+  excerpt     String?
+  coverImage  String?
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  isPublished Boolean  @default(false)
+  tags        String?
+  metaTitle   String?
+  metaDesc    String?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("blog_posts")
+}
+
+model ExamPage {
+  id          String   @id @default(uuid())
+  examId      String
+  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  title       String
+  content     String 
+  slug        String   @unique
+  metaTitle   String?
+  metaDesc    String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("exam_pages")
+}
