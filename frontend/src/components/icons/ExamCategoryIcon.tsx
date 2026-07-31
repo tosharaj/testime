@@ -13,7 +13,7 @@ const icons: Record<string, React.ReactNode> = {
   ),
   opsc: (
     <span className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-white flex items-center justify-center">
-      <img src="/images/opsc.jpeg" alt="OPSC" className="h-full w-full object-contain" />
+      <img src="/images/opsc.jpeg" alt="OPSC" className="h-3/4 w-3/4 object-contain" />
     </span>
   ),
   ssb: (

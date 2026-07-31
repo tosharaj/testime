@@ -5,6 +5,15 @@ import { ChevronRight, Newspaper, Calendar, Clock, Bookmark, Share2, ArrowRight 
 
 const categories = ['All', 'National', 'International', 'Odisha', 'Economy', 'Science & Tech', 'Environment'];
 
+const categoryIconMap: Record<string, { src: string; icon: string; bg: string }> = {
+  National: { src: '/images/national.png', icon: '🇮🇳', bg: 'bg-blue-50' },
+  International: { src: '/images/international.png', icon: '🌍', bg: 'bg-teal-50' },
+  Odisha: { src: '/images/odisha_govt.png', icon: '🏛️', bg: 'bg-orange-50' },
+  Economy: { src: '/images/economy.png', icon: '📈', bg: 'bg-emerald-50' },
+  'Science & Tech': { src: '/images/science_tech.png', icon: '🚀', bg: 'bg-violet-50' },
+  Environment: { src: '/images/environment.png', icon: '🌱', bg: 'bg-green-50' },
+};
+
 const articles = [
   {
     id: 1, slug: 'odisha-cabinet-approves-major-infrastructure-projects', title: 'Odisha Cabinet Approves Major Infrastructure Projects', category: 'Odisha', date: '27 Jul 2026',
@@ -43,6 +52,27 @@ const articles = [
     readTime: '6 min',
   },
 ];
+
+function CategoryIcon({ category }: { category: string }) {
+  const meta = categoryIconMap[category];
+  const [hasImage, setHasImage] = useState(true);
+  if (!meta) return null;
+  if (!hasImage) {
+    return (
+      <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg ${meta.bg}`}>
+        {meta.icon}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={meta.src}
+      alt={category}
+      onError={() => setHasImage(false)}
+      className="h-9 w-9 shrink-0 rounded-lg object-contain bg-surface-50"
+    />
+  );
+}
 
 export default function CurrentAffairsPage() {
   const [activeCategory, setActiveCategory] = useState('All');
@@ -102,7 +132,10 @@ export default function CurrentAffairsPage() {
                       <Clock className="h-3 w-3" /> {article.readTime}
                     </span>
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2 leading-snug">{article.title}</h2>
+                  <div className="flex items-start gap-3 mb-2">
+                    <CategoryIcon category={article.category} />
+                    <h2 className="text-lg font-semibold text-gray-900 mb-2 leading-snug">{article.title}</h2>
+                  </div>
                   <p className="text-sm text-gray-500 leading-relaxed mb-4">{article.excerpt}</p>
                   <div className="flex items-center gap-2.5">
                     <Link href={`/current-affairs/${article.slug}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">

@@ -15,6 +15,16 @@ const classes = [
   { id: 12, name: 'Class 12', slug: 'class-12', subjects: ['History', 'Geography', 'Polity', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Mathematics'], bookCount: 8 },
 ];
 
+const classThemes: Record<number, { gradient: string; chip: string; icon: string; badge: string }> = {
+  6: { gradient: 'from-mint-100 to-brand-50', chip: 'bg-mint-50 text-mint-700', icon: 'bg-white/80 text-mint-700', badge: 'bg-mint-100 text-mint-700' },
+  7: { gradient: 'from-ocean-100 to-brand-50', chip: 'bg-ocean-50 text-ocean-700', icon: 'bg-white/80 text-ocean-700', badge: 'bg-ocean-100 text-ocean-700' },
+  8: { gradient: 'from-lavender-100 to-brand-50', chip: 'bg-lavender-50 text-lavender-700', icon: 'bg-white/80 text-lavender-700', badge: 'bg-lavender-100 text-lavender-700' },
+  9: { gradient: 'from-accent-100 to-brand-50', chip: 'bg-accent-50 text-accent-700', icon: 'bg-white/80 text-accent-700', badge: 'bg-accent-100 text-accent-700' },
+  10: { gradient: 'from-mint-100 to-ocean-50', chip: 'bg-mint-50 text-mint-700', icon: 'bg-white/80 text-mint-700', badge: 'bg-mint-100 text-mint-700' },
+  11: { gradient: 'from-lavender-100 to-ocean-50', chip: 'bg-lavender-50 text-lavender-700', icon: 'bg-white/80 text-lavender-700', badge: 'bg-lavender-100 text-lavender-700' },
+  12: { gradient: 'from-accent-100 to-ocean-50', chip: 'bg-accent-50 text-accent-700', icon: 'bg-white/80 text-accent-700', badge: 'bg-accent-100 text-accent-700' },
+};
+
 const stats = [
   { label: 'NCERT Books', value: '43+', icon: Library },
   { label: 'Chapters', value: '500+', icon: BookText },
@@ -64,25 +74,36 @@ export default function NcertPage() {
 
         <h2 className="text-xl font-bold text-surface-900 mb-5">Browse by Class</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {classes.map(c => (
-            <Link key={c.id} href={`/ncert/${c.slug}`}>
-              <Card className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer h-full">
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="h-11 w-11 rounded-xl bg-white border border-surface-100 flex items-center justify-center overflow-hidden">
-                      <img src="/images/ncert_logo.png" alt="NCERT" className="h-full w-full object-contain p-0.5" />
+          {classes.map(c => {
+            const theme = classThemes[c.id];
+            return (
+              <Link key={c.id} href={`/ncert/${c.slug}`}>
+                <Card className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer h-full overflow-hidden">
+                  <div className={`h-1.5 bg-gradient-to-r ${theme.gradient}`} />
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`h-14 w-14 rounded-2xl flex items-center justify-center overflow-hidden shadow-sm ${theme.icon}`}>
+                        <img src="/images/ncert_logo.png" alt="NCERT" className="h-4/5 w-4/5 object-contain" />
+                      </div>
+                      <Badge className={theme.badge} size="sm">{c.bookCount} books</Badge>
                     </div>
-                    <Badge variant="default" size="sm">{c.bookCount} books</Badge>
-                  </div>
-                  <h3 className="font-bold text-surface-900 mb-1">{c.name}</h3>
-                  <p className="text-xs text-surface-500 mb-3">{c.subjects.join(', ')}</p>
-                  <div className="flex items-center gap-1 text-xs font-medium text-brand-600">
-                    Browse Chapters <ArrowRight className="h-3 w-3" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-2xl font-bold text-surface-900">{c.id}</span>
+                      <h3 className="font-bold text-surface-700">{c.name.replace(`Class ${c.id}`, 'th')}</h3>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {c.subjects.map(s => (
+                        <span key={s} className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${theme.chip}`}>{s}</span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs font-semibold text-brand-600 group-hover:gap-1.5 transition-all">
+                      Browse Chapters <ArrowRight className="h-3.5 w-3.5" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
 
         <div className="mt-12 p-6 rounded-xl bg-gradient-to-br from-mint-50 to-ocean-50 border border-mint-100">
