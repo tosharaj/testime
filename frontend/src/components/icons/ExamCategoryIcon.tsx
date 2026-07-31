@@ -2,12 +2,9 @@
 
 const icons: Record<string, React.ReactNode> = {
   ossc: (
-    <svg viewBox="0 0 48 48" fill="none" className="h-14 w-14 shrink-0">
-      <rect width="48" height="48" rx="12" fill="#4338ca" />
-      <path d="M14 16h20l-4 8 4 8H14l4-8-4-8z" fill="white" opacity="0.9" />
-      <circle cx="24" cy="24" r="5" fill="#fbbf24" />
-      <text x="24" y="26" textAnchor="middle" fontSize="7" fontWeight="700" fill="#4338ca">OS</text>
-    </svg>
+    <span className="h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-white border border-surface-200 flex items-center justify-center">
+      <img src="/images/OSSC.svg" alt="OSSC" className="h-full w-full object-contain p-0.5" />
+    </span>
   ),
   osssc: (
     <span className="h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-white border border-surface-200 flex items-center justify-center">
@@ -20,13 +17,9 @@ const icons: Record<string, React.ReactNode> = {
     </span>
   ),
   ssb: (
-    <svg viewBox="0 0 48 48" fill="none" className="h-14 w-14 shrink-0">
-      <rect width="48" height="48" rx="12" fill="#7c3aed" />
-      <rect x="12" y="14" width="24" height="22" rx="3" fill="white" opacity="0.9" />
-      <rect x="18" y="20" width="5" height="5" rx="1" fill="#7c3aed" opacity="0.2" />
-      <circle cx="24" cy="18" r="6" fill="#7c3aed" opacity="0.12" />
-      <text x="24" y="31" textAnchor="middle" fontSize="9" fontWeight="800" fill="#7c3aed">SSB</text>
-    </svg>
+    <span className="h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-white border border-surface-200 flex items-center justify-center">
+      <img src="/images/SSB.svg" alt="SSB" className="h-full w-full object-contain p-0.5" />
+    </span>
   ),
   'odisha-police': (
     <span className="h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-white border border-surface-200 flex items-center justify-center">
