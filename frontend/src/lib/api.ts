@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { mockTests, mockQuestions, mockExams } from './mockData';
+import { examMenuCategories } from './examMenuData';
 
 function generateAttemptQuestionSet(testId: string, count: number) {
   return Array.from({ length: count }, (_, i) => ({
@@ -77,7 +78,25 @@ export const api = {
 
   getExamBySlug: async (slug: string) => {
     const { data, error } = await supabase.from('exams').select('*').eq('slug', slug).single();
-    if (error || !data) return mockExams.find(e => e.slug === slug);
+    if (error || !data) {
+      const mock = mockExams.find(e => e.slug === slug);
+      if (mock) return mock;
+      const menuCat = examMenuCategories.find(c => c.slug === slug);
+      if (menuCat) {
+        return {
+          id: menuCat.slug,
+          name: menuCat.name,
+          shortName: menuCat.shortName,
+          slug: menuCat.slug,
+          description: menuCat.description,
+          icon: '📘',
+          color: menuCat.color,
+          family: 'SSC' as const,
+          subjects: [],
+        };
+      }
+      return undefined;
+    }
     return data;
   },
 

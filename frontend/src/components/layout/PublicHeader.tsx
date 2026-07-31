@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { Menu, X, Search, User, ChevronDown, LogOut, BookOpen, PenTool } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import ExamsMegaMenu from './ExamsMegaMenu';
+import ExamsMegaMenu from './mega-menu/ExamsMegaMenu';
+import MobileExamsAccordion from './mega-menu/MobileExamsAccordion';
 
 const navItems = [
   { label: 'Exams', href: '/exams' },
@@ -20,9 +21,7 @@ export default function PublicHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [pyqOpen, setPyqOpen] = useState(false);
   const [mobilePyqOpen, setMobilePyqOpen] = useState(false);
-  const [examsOpen, setExamsOpen] = useState(false);
   const pyqDropdownRef = useRef<HTMLDivElement>(null);
-  const examsDropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -36,7 +35,6 @@ export default function PublicHeader() {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (pyqDropdownRef.current && !pyqDropdownRef.current.contains(e.target as Node)) setPyqOpen(false);
-      if (examsDropdownRef.current && !examsDropdownRef.current.contains(e.target as Node)) setExamsOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -44,7 +42,6 @@ export default function PublicHeader() {
 
   useEffect(() => {
     setPyqOpen(false);
-    setExamsOpen(false);
     setMobilePyqOpen(false);
   }, [pathname]);
 
@@ -75,28 +72,10 @@ export default function PublicHeader() {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             if (item.label === 'Exams') {
               return (
-                <div key={item.href} className="relative" ref={examsDropdownRef}>
-                  <button
-                    onClick={() => setExamsOpen(!examsOpen)}
-                    onMouseEnter={() => setExamsOpen(true)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      isExamsActive
-                        ? 'text-brand-600 bg-brand-50'
-                        : 'text-surface-600 hover:text-brand-600 hover:bg-brand-50'
-                    }`}
-                  >
-                    Exams
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${examsOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  {examsOpen && (
-                    <div
-                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 animate-fade-in origin-top"
-                      onMouseLeave={() => setExamsOpen(false)}
-                    >
-                      <ExamsMegaMenu />
-                    </div>
-                  )}
-                </div>
+                <ExamsMegaMenu
+                  key={item.href}
+                  className={isExamsActive ? 'text-brand-600' : undefined}
+                />
               );
             }
             if (item.label === 'Previous Year Questions') {
@@ -203,6 +182,14 @@ export default function PublicHeader() {
         <div className="lg:hidden border-t border-surface-200 bg-white animate-fade-in">
           <nav className="px-4 py-2 space-y-0.5">
             {navItems.map((item) => {
+              if (item.label === 'Exams') {
+                return (
+                  <MobileExamsAccordion
+                    key={item.href}
+                    onNavigate={() => setMobileOpen(false)}
+                  />
+                );
+              }
               if (item.label === 'Previous Year Questions') {
                 return (
                   <div key={item.href}>
