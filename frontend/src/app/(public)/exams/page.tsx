@@ -10,7 +10,7 @@ export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
 
   useEffect(() => {
-    api.getExams().then(setExams).catch(console.error);
+    api.getExams().then(res => setExams(res.data)).catch(console.error);
   }, []);
 
   return (

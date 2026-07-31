@@ -1,170 +1,260 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
-
+import { supabase } from './supabase';
 import { mockTests, mockQuestions, mockExams } from './mockData';
 
-async function fetchAPI(endpoint: string, options: RequestInit = {}) {
-  const isClient = typeof window !== 'undefined';
+function generateAttemptQuestionSet(testId: string, count: number) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `q_${testId}_${i}`,
+    text: `Sample question #${i + 1}. ${['Which of the following is correct?', 'Choose the best option:', 'Identify the correct statement:'][i % 3]}`,
+    options: [`Option A`, `Option B`, `Option C`, `Option D`],
+    answer: `Option A`,
+    subjectId: 'general',
+    difficulty: 'medium',
+  }));
+}
 
-  // Mock interceptor (returns mock data instead of fetching from dead backend)
-  const url = endpoint.split('?')[0];
-  const params = new URLSearchParams(endpoint.includes('?') ? endpoint.split('?')[1] : '');
+export const api = {
+  // Auth
+  login: async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+    localStorage.setItem('token', data.session?.access_token || '');
+    return { token: data.session?.access_token, user: data.user };
+  },
 
-  if (url === '/tests' && (!options.method || options.method === 'GET')) {
-    const slug = params.get('slug');
-    const id = params.get('id');
-    const examId = params.get('examId');
-    const type = params.get('type');
-    const isFree = params.get('isFree');
-    const page = parseInt(params.get('page') || '1', 10);
-    const limit = 50;
-    if (slug) { const t = mockTests.find(t => t.slug === slug); if (t) return t; }
-    if (id) { const t = mockTests.find(t => t.id === id); if (t) return t; }
-    let filtered = [...mockTests];
-    if (examId) filtered = filtered.filter(t => t.examId === examId);
-    if (type) filtered = filtered.filter(t => t.test_type === type);
-    if (isFree !== null) filtered = filtered.filter(t => t.isFree === (isFree === 'true'));
-    return { data: filtered.slice((page - 1) * limit, page * limit), total: filtered.length, page, totalPages: Math.ceil(filtered.length / limit) };
-  }
+  register: async (data: { email: string; password: string; name: string; phone?: string }) => {
+    const { data: authData, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: { data: { name: data.name } },
+    });
+    if (error) throw new Error(error.message);
+    if (authData.session?.access_token) localStorage.setItem('token', authData.session.access_token);
+    return { token: authData.session?.access_token, user: authData.user };
+  },
 
-  if (url === '/exams' && (!options.method || options.method === 'GET')) {
-    const category = params.get('category');
-    let data = category ? mockExams.filter(e => e.category === category) : mockExams;
+  getProfile: async () => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) throw new Error('Not authenticated');
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    return { id: user.id, email: user.email, name: profile?.name || user.user_metadata?.name || user.email, role: profile?.role || 'student', phone: profile?.phone || '' };
+  },
+
+  changePassword: async (oldPassword: string, newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw new Error(error.message);
+  },
+
+  sendPhoneOtp: async (phone: string) => {
+    const { error } = await supabase.auth.signInWithOtp({ phone });
+    if (error) throw new Error(error.message);
+  },
+
+  verifyPhoneOtp: async (phone: string, otp: string) => {
+    const { error } = await supabase.auth.verifyOtp({ phone, token: otp, type: 'sms' });
+    if (error) throw new Error(error.message);
+  },
+
+  googleLogin: async (idToken: string) => {
+    const { data, error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
+    if (error) throw new Error(error.message);
+    return { token: data.session?.access_token, user: data.user };
+  },
+
+  // Exams
+  getExams: async (category?: string) => {
+    let query = supabase.from('exams').select('*');
+    if (category) query = query.eq('category', category);
+    const { data, error } = await query;
+    if (error || !data?.length) return { data: category ? mockExams.filter(e => e.category === category) : mockExams, total: mockExams.length };
     return { data, total: data.length };
-  }
+  },
 
-  if (url === '/attempts/start' && options.method === 'POST') {
-    const body = JSON.parse(options.body as string);
-    const test = mockTests.find(t => t.id === body.testId);
-    if (!test) throw new Error('Test not found');
-    const count = test.question_count || 10;
-    const questions = Array.from({ length: count }, (_, i) => ({
-      id: `q_${body.testId}_${i}`,
-      text: `Sample question #${i + 1} for "${test.title}". ${['Which of the following is correct?', 'Choose the best option:', 'Identify the correct statement:'][i % 3]}`,
-      options: [
-        `Option A for question ${i + 1}`,
-        `Option B for question ${i + 1}`,
-        `Option C for question ${i + 1}`,
-        `Option D for question ${i + 1}`,
-      ],
-      answer: `Option A for question ${i + 1}`,
-      subjectId: 'general',
-      difficulty: test.difficulty || 'medium',
-    }));
-    return {
-      id: `attempt_${Date.now()}`,
-      testId: test.id,
-      test: { ...test, questions },
-      status: 'in_progress',
-      startedAt: new Date().toISOString(),
-      answers: [],
-    };
-  }
+  getExam: async (id: string) => {
+    const { data, error } = await supabase.from('exams').select('*').eq('id', id).single();
+    if (error || !data) return mockExams.find(e => e.id === id);
+    return data;
+  },
 
-  if (url === '/attempts' && params.get('id')) {
-    const attemptId = params.get('id');
-    const t = mockTests.find(t => t.id === attemptId?.replace('attempt_', ''));
-    if (t) {
-      const count = t.question_count || 10;
-      const questions = Array.from({ length: count }, (_, i) => ({
-        id: `q_${t.id}_${i}`,
-        text: `Sample question #${i + 1} for "${t.title}". ${['Which of the following is correct?', 'Choose the best option:', 'Identify the correct statement:'][i % 3]}`,
-        options: [
-          `Option A for question ${i + 1}`,
-          `Option B for question ${i + 1}`,
-          `Option C for question ${i + 1}`,
-          `Option D for question ${i + 1}`,
-        ],
-        answer: `Option A for question ${i + 1}`,
-        subjectId: 'general',
-        difficulty: t.difficulty || 'medium',
-      }));
-      return {
-        id: attemptId,
-        testId: t.id,
-        test: { ...t, questions },
-        status: 'in_progress',
-        startedAt: new Date().toISOString(),
-        answers: [],
-      };
-    }
-  }
+  getExamBySlug: async (slug: string) => {
+    const { data, error } = await supabase.from('exams').select('*').eq('slug', slug).single();
+    if (error || !data) return mockExams.find(e => e.slug === slug);
+    return data;
+  },
 
-  if (url.startsWith('/attempts/') && url.endsWith('/submit') && options.method === 'POST') {
-    return { status: 'completed', submittedAt: new Date().toISOString() };
-  }
+  // Subjects
+  getSubjects: async (examId: string) => {
+    const { data, error } = await supabase.from('subjects').select('*').eq('exam_id', examId);
+    if (error) return [];
+    return data;
+  },
 
-  // Handle getAttempt by path e.g. /attempts/attempt_123
-  if (url.startsWith('/attempts/') && url.split('/').length === 3 && (!options.method || options.method === 'GET')) {
-    const attemptId = url.split('/')[2];
-    const testId = attemptId.replace('attempt_', '');
-    const t = mockTests.find(t => t.id === testId);
-    if (t) {
-      const count = t.question_count || 10;
-      const questions = Array.from({ length: count }, (_, i) => ({
-        id: `q_${t.id}_${i}`,
-        text: `Sample question #${i + 1} for "${t.title}". ${['Which of the following is correct?', 'Choose the best option:', 'Identify the correct statement:'][i % 3]}`,
-        options: [`Option A for question ${i + 1}`, `Option B for question ${i + 1}`, `Option C for question ${i + 1}`, `Option D for question ${i + 1}`],
-        answer: `Option A for question ${i + 1}`,
-        subjectId: 'general',
-        difficulty: t.difficulty || 'medium',
-      }));
-      return { id: attemptId, testId, test: { ...t, questions }, status: 'in_progress', startedAt: new Date().toISOString(), answers: [] };
-    }
-  }
+  // Topics
+  getTopics: async (subjectId: string) => {
+    return [];
+  },
 
-  if (url === '/questions' && (!options.method || options.method === 'GET')) {
-    const examId = params.get('examId');
-    const difficulty = params.get('difficulty');
-    const year = params.get('year');
-    const page = parseInt(params.get('page') || '1', 10);
-    const limit = 50;
+  // Notes
+  getNotes: async (params?: { examId?: string; subjectId?: string; topicId?: string; search?: string; page?: number }) => {
+    return { data: [], total: 0, page: 1, totalPages: 1 };
+  },
+
+  getNote: async (id: string) => null,
+  getNoteBySlug: async (slug: string) => null,
+
+  // Questions
+  getQuestions: async (params?: { examId?: string; subjectId?: string; topicId?: string; difficulty?: string; year?: number; page?: number }) => {
     let filtered = [...mockQuestions];
-    if (examId) filtered = filtered.filter(q => q.examId === examId);
-    if (difficulty) filtered = filtered.filter(q => q.difficulty === difficulty);
-    if (year) filtered = filtered.filter(q => q.year === parseInt(year, 10));
+    if (params?.examId) filtered = filtered.filter(q => q.examId === params.examId);
+    if (params?.difficulty) filtered = filtered.filter(q => q.difficulty === params.difficulty);
+    if (params?.year) filtered = filtered.filter(q => q.year === params.year);
+    const page = params?.page || 1;
+    const limit = 50;
     return { data: filtered.slice((page - 1) * limit, page * limit), total: filtered.length, page, totalPages: Math.ceil(filtered.length / limit) };
-  }
+  },
 
-  if (url === '/plans' && (!options.method || options.method === 'GET')) {
-    return { data: [
-      { id: '1', name: 'Free', price: 0, duration: 30, features: ['10 tests/month', 'Basic analytics'] },
-      { id: '2', name: 'Pro Monthly', price: 299, duration: 30, features: ['Unlimited tests', 'Detailed analytics', 'All mock tests'] },
-      { id: '3', name: 'Pro Yearly', price: 1999, duration: 365, features: ['All Pro features', 'Priority support', 'Premium content'] },
-    ]};
-  }
+  getQuestion: async (id: string) => mockQuestions.find(q => q.id === id),
 
-  if (url === '/auth/login' && options.method === 'POST') {
-    const body = JSON.parse(options.body as string);
-    if (body.email === 'admin@testime.com' && body.password === 'password') {
-      return { token: 'mock-token-admin', user: { id: '1', name: 'Admin', email: 'admin@testime.com', role: 'admin' } };
+  // Tests
+  getTests: async (params?: { examId?: string; type?: string; isFree?: boolean; page?: number }) => {
+    let filtered = [...mockTests];
+    if (params?.examId) filtered = filtered.filter(t => t.examId === params.examId);
+    if (params?.type) filtered = filtered.filter(t => t.test_type === params.type);
+    if (params?.isFree !== undefined) filtered = filtered.filter(t => t.isFree === params.isFree);
+    const page = params?.page || 1;
+    const limit = 50;
+    return { data: filtered.slice((page - 1) * limit, page * limit), total: filtered.length, page, totalPages: Math.ceil(filtered.length / limit) };
+  },
+
+  getTest: async (id: string) => {
+    const { data, error } = await supabase.from('tests').select('*').eq('id', id).single();
+    if (error || !data) return mockTests.find(t => t.id === id);
+    return data;
+  },
+
+  getTestBySlug: async (slug: string) => {
+    const { data, error } = await supabase.from('tests').select('*').eq('slug', slug).single();
+    if (error || !data) return mockTests.find(t => t.slug === slug);
+    return data;
+  },
+
+  // Attempts
+  startAttempt: async (testId: string) => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error('Not authenticated');
+
+    const test = mockTests.find(t => t.id === testId);
+    if (!test) throw new Error('Test not found');
+
+    const attemptId = `attempt_${Date.now()}`;
+    const count = test.question_count || 10;
+    const questions = generateAttemptQuestionSet(testId, count);
+
+    const { error } = await supabase.from('attempts').insert({
+      id: attemptId,
+      user_id: user.id,
+      test_id: testId,
+      answers: [],
+      status: 'in_progress',
+      total_marks: test.totalMarks,
+    });
+
+    if (error) throw new Error(error.message);
+
+    return { id: attemptId, testId, test: { ...test, questions }, status: 'in_progress', startedAt: new Date().toISOString(), answers: [] };
+  },
+
+  submitAttempt: async (attemptId: string, data: { answers: any[]; timeTaken?: number }) => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error('Not authenticated');
+
+    const { error } = await supabase.from('attempts').update({
+      answers: data.answers,
+      status: 'completed',
+      submitted_at: new Date().toISOString(),
+      time_taken: data.timeTaken,
+    }).eq('id', attemptId).eq('user_id', user.id);
+
+    if (error) throw new Error(error.message);
+    return { status: 'completed', submittedAt: new Date().toISOString() };
+  },
+
+  getMyAttempts: async (page?: number) => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return { data: [], total: 0 };
+    const { data, error } = await supabase.from('attempts').select('*').eq('user_id', user.id).order('started_at', { ascending: false });
+    if (error) return { data: [], total: 0 };
+    return { data, total: data.length };
+  },
+
+  getAttempt: async (id: string) => {
+    const { data, error } = await supabase.from('attempts').select('*').eq('id', id).single();
+    if (error || !data) {
+      const testId = id.replace('attempt_', '');
+      const t = mockTests.find(t => t.id === testId);
+      if (!t) throw new Error('Attempt not found');
+      const count = t.question_count || 10;
+      return { id, testId, test: { ...t, questions: generateAttemptQuestionSet(testId, count) }, status: 'in_progress', startedAt: new Date().toISOString(), answers: [] };
     }
-    if (body.email && body.password) {
-      return { token: 'mock-token-user', user: { id: '2', name: body.email.split('@')[0], email: body.email, role: 'student' } };
-    }
-    throw new Error('Invalid credentials');
-  }
+    const test = mockTests.find(t => t.id === data.test_id);
+    const count = test?.question_count || 10;
+    return { ...data, test: { ...test, questions: generateAttemptQuestionSet(data.test_id, count) } };
+  },
 
-  if (url === '/auth/register' && options.method === 'POST') {
-    const body = JSON.parse(options.body as string);
-    return { token: 'mock-token-new', user: { id: '3', name: body.name || 'User', email: body.email, role: 'student' } };
-  }
+  // Plans
+  getPlans: async () => {
+    const { data, error } = await supabase.from('plans').select('*');
+    if (error || !data?.length) return { data: [{ id: '1', name: 'Free', price: 0, duration: 30, features: ['10 tests/month', 'Basic analytics'] }, { id: '2', name: 'Pro Monthly', price: 249, duration: 30, features: ['Unlimited tests', 'Detailed analytics', 'All mock tests', 'Priority support'] }] };
+    return { data };
+  },
 
-  if (url === '/auth/profile') {
-    return { id: '2', name: 'Test User', email: 'user@testime.com', role: 'student', phone: '9876543210' };
-  }
+  // Orders
+  createOrder: async (planId: string, couponCode?: string) => {
+    return { id: 'mock-order', status: 'completed' };
+  },
 
-  if (url === '/dashboard/student') {
+  getMyOrders: async () => [],
+
+  // Bookmarks
+  getBookmarks: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { data: [] };
+    const { data } = await supabase.from('bookmarks').select('*').eq('user_id', user.id);
+    return { data: data || [] };
+  },
+
+  addBookmark: async (data: { noteId?: string; questionId?: string }) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { error } = await supabase.from('bookmarks').insert({ user_id: user.id, note_id: data.noteId, question_id: data.questionId });
+    if (error) throw new Error(error.message);
+  },
+
+  removeBookmark: async (id: string) => {
+    const { error } = await supabase.from('bookmarks').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+  },
+
+  // Notifications
+  getNotifications: async () => [],
+  markNotificationRead: async (id: string) => {},
+  markAllNotificationsRead: async () => {},
+
+  // Dashboard
+  getStudentDashboard: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
     const now = new Date();
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    const weeklyProgress = days.map((day, i) => {
-      const r = Math.random();
-      return {
-        day,
-        tests: r > 0.5 ? Math.floor(r * 3) + 1 : 0,
-        accuracy: r > 0.5 ? Math.floor(60 + r * 35) : 0,
-      };
-    });
+    let myAttempts: any[] = [];
+    if (user) {
+      const { data } = await supabase.from('attempts').select('*').eq('user_id', user.id);
+      if (data) myAttempts = data;
+    }
+
+    const weeklyProgress = days.map((day, i) => ({
+      day, tests: i < 3 ? Math.floor(Math.random() * 3) + 1 : 0,
+      accuracy: i < 3 ? Math.floor(60 + Math.random() * 35) : 0,
+    }));
 
     const subjectPerformance = [
       { subject: 'General Studies', base: 82 },
@@ -175,220 +265,49 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
       { subject: 'Science & Tech', base: 79 },
     ].map(s => ({ ...s, accuracy: s.base + Math.floor(Math.random() * 8 - 4), testsTaken: Math.floor(3 + Math.random() * 8) }));
 
-    const weakAreas = [
-      ...subjectPerformance.filter(s => s.accuracy < 72).map(s => s.subject),
-      'Time & Work', 'Data Interpretation',
-    ].slice(0, 3);
-
-    const strongAreas = [
-      ...subjectPerformance.filter(s => s.accuracy >= 78).map(s => s.subject),
-      'History', 'Geography',
-    ].slice(0, 3);
+    const weakAreas = [...subjectPerformance.filter(s => s.accuracy < 72).map(s => s.subject), 'Time & Work', 'Data Interpretation'].slice(0, 3);
+    const strongAreas = [...subjectPerformance.filter(s => s.accuracy >= 78).map(s => s.subject), 'History', 'Geography'].slice(0, 3);
 
     const monthlyTrend = ['Mar', 'Apr', 'May', 'Jun', 'Jul'].map((month, i) => ({
-      month,
-      accuracy: 56 + i * 4 + Math.floor(Math.random() * 6),
+      month, accuracy: 56 + i * 4 + Math.floor(Math.random() * 6),
       tests: 3 + Math.floor(Math.random() * 5),
     }));
 
-    const recommendations = mockTests
-      .filter(t => t.isFree)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3)
-      .map(t => ({ id: t.id, title: t.title, duration: t.duration }));
-
-    const suggestions = [];
-
-    const lowSubjects = subjectPerformance.filter(s => s.accuracy < 70);
-    if (lowSubjects.length > 0) {
-      suggestions.push({
-        type: 'warning', icon: 'Target',
-        message: `Focus on ${lowSubjects[0].subject} — your accuracy (${lowSubjects[0].accuracy}%) needs improvement. Try sectional tests.`,
-        action: 'Practice Now', link: '/my-tests',
-      });
-    }
-
-    suggestions.push({
-      type: 'tip', icon: 'Lightbulb',
-      message: 'You perform best in the morning. Schedule your mock tests before noon for sharper focus.',
-      action: null, link: null,
-    });
+    const recommendations = mockTests.filter(t => t.isFree).sort(() => Math.random() - 0.5).slice(0, 3).map(t => ({ id: t.id, title: t.title, duration: t.duration }));
 
     const totalThisWeek = weeklyProgress.reduce((sum, d) => sum + d.tests, 0);
-    suggestions.push({
-      type: 'achievement', icon: 'Award',
-      message: `${totalThisWeek} tests this week! Consistency is key. Keep building momentum.`,
-      action: 'Keep Going', link: null,
-    });
+    const avgAccuracy = myAttempts.length ? Math.round(myAttempts.reduce((s, a) => s + (a.accuracy || 0), 0) / myAttempts.length) : 0;
 
-    const staleSubject = subjectPerformance.sort(() => Math.random() - 0.5).find(s => s.testsTaken < 4);
-    if (staleSubject) {
-      suggestions.push({
-        type: 'info', icon: 'BookOpen',
-        message: `You haven't revised ${staleSubject.subject} recently. Spend 20 mins on it today.`,
-        action: 'Open Notes', link: '/my-notes',
-      });
+    const suggestions = [];
+    const lowSubjects = subjectPerformance.filter(s => s.accuracy < 70);
+    if (lowSubjects.length > 0) {
+      suggestions.push({ type: 'warning', icon: 'Target', message: `Focus on ${lowSubjects[0].subject} — your accuracy (${lowSubjects[0].accuracy}%) needs improvement.`, action: 'Practice Now', link: '/my-tests' });
     }
+    suggestions.push({ type: 'tip', icon: 'Lightbulb', message: 'You perform best in the morning. Schedule your mock tests before noon for sharper focus.', action: null, link: null });
+    suggestions.push({ type: 'achievement', icon: 'Award', message: `${totalThisWeek} tests this week! Consistency is key.`, action: 'Keep Going', link: null });
 
     return {
-      stats: {
-        totalAttempts: monthlyTrend.reduce((s, m) => s + m.tests, 0),
-        avgAccuracy: Math.round(monthlyTrend.reduce((s, m) => s + m.accuracy, 0) / monthlyTrend.length),
-        totalBookmarks: 12 + Math.floor(Math.random() * 6),
-        bestRank: Math.floor(Math.random() * 8) + 1,
-      },
-      recentAttempts: mockTests
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 5)
-        .map((t, i) => {
-          const score = Math.floor(40 + Math.random() * 50);
-          const total = t.totalMarks || 100;
-          return {
-            id: `a${i}`,
-            test: { title: t.title },
-            submittedAt: new Date(now.getTime() - i * 86400000 * 2).toISOString(),
-            score,
-            totalMarks: total,
-            accuracy: Math.round((score / total) * 100),
-          };
-        }),
+      stats: { totalAttempts: myAttempts.length || monthlyTrend.reduce((s, m) => s + m.tests, 0), avgAccuracy: avgAccuracy || Math.round(monthlyTrend.reduce((s, m) => s + m.accuracy, 0) / monthlyTrend.length), totalBookmarks: 12, bestRank: 1 },
+      recentAttempts: mockTests.sort(() => Math.random() - 0.5).slice(0, 5).map((t, i) => ({ id: `a${i}`, test: { title: t.title }, submittedAt: new Date(now.getTime() - i * 86400000 * 2).toISOString(), score: Math.floor(40 + Math.random() * 50), totalMarks: t.totalMarks || 100, accuracy: Math.round((Math.floor(40 + Math.random() * 50) / (t.totalMarks || 100)) * 100) })),
       recommendedTests: recommendations,
-      upcomingTests: [
-        { title: 'Weekly Revision Test', scheduledAt: new Date(now.getTime() + 86400000 * 2).toISOString() },
-        { title: 'Full Mock Weekend Challenge', scheduledAt: new Date(now.getTime() + 86400000 * 4).toISOString() },
-      ],
+      upcomingTests: [{ title: 'Weekly Revision Test', scheduledAt: new Date(now.getTime() + 86400000 * 2).toISOString() }, { title: 'Full Mock Weekend Challenge', scheduledAt: new Date(now.getTime() + 86400000 * 4).toISOString() }],
       progress: { thisWeek: totalThisWeek, lastWeek: Math.max(1, totalThisWeek - Math.floor(Math.random() * 3)), streak: 5 + Math.floor(Math.random() * 8) },
       analytics: { weeklyProgress, subjectPerformance, weakAreas, strongAreas, monthlyTrend },
       suggestions,
     };
-  }
-
-  // Fallback to real fetch
-  const token = isClient ? localStorage.getItem('token') : null;
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
-  };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-
-  const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || 'API Error');
-  }
-  return data;
-}
-
-export const api = {
-  // Auth
-  login: (email: string, password: string) =>
-    fetchAPI('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
-  register: (data: { email: string; password: string; name: string; phone?: string }) =>
-    fetchAPI('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
-  getProfile: () => fetchAPI('/auth/profile'),
-  changePassword: (oldPassword: string, newPassword: string) =>
-    fetchAPI('/auth/change-password', { method: 'POST', body: JSON.stringify({ oldPassword, newPassword }) }),
-
-  // Mobile OTP Auth
-  sendPhoneOtp: (phone: string) =>
-    fetchAPI('/auth/send-phone-otp', { method: 'POST', body: JSON.stringify({ phone }) }),
-  verifyPhoneOtp: (phone: string, otp: string) =>
-    fetchAPI('/auth/verify-phone-otp', { method: 'POST', body: JSON.stringify({ phone, otp }) }),
-
-  // Google Auth
-  googleLogin: (idToken: string) =>
-    fetchAPI('/auth/google-login', { method: 'POST', body: JSON.stringify({ idToken }) }),
-
-  // Exams
-  getExams: (category?: string) => fetchAPI(`/exams${category ? `?category=${category}` : ''}`),
-  getExam: (id: string) => fetchAPI(`/exams/${id}`),
-  getExamBySlug: (slug: string) => fetchAPI(`/exams/slug/${slug}`),
-
-  // Subjects
-  getSubjects: (examId: string) => fetchAPI(`/subjects/exam/${examId}`),
-
-  // Topics
-  getTopics: (subjectId: string) => fetchAPI(`/topics/subject/${subjectId}`),
-
-  // Notes
-  getNotes: (params?: { examId?: string; subjectId?: string; topicId?: string; search?: string; page?: number }) => {
-    const q = new URLSearchParams();
-    if (params?.examId) q.set('examId', params.examId);
-    if (params?.subjectId) q.set('subjectId', params.subjectId);
-    if (params?.topicId) q.set('topicId', params.topicId);
-    if (params?.search) q.set('search', params.search);
-    if (params?.page) q.set('page', params.page.toString());
-    return fetchAPI(`/notes?${q}`);
   },
-  getNote: (id: string) => fetchAPI(`/notes/${id}`),
-  getNoteBySlug: (slug: string) => fetchAPI(`/notes/slug/${slug}`),
 
-  // Questions
-  getQuestions: (params?: { examId?: string; subjectId?: string; topicId?: string; difficulty?: string; year?: number; page?: number }) => {
-    const q = new URLSearchParams();
-    if (params?.examId) q.set('examId', params.examId);
-    if (params?.subjectId) q.set('subjectId', params.subjectId);
-    if (params?.topicId) q.set('topicId', params.topicId);
-    if (params?.difficulty) q.set('difficulty', params.difficulty);
-    if (params?.year) q.set('year', params.year.toString());
-    if (params?.page) q.set('page', params.page.toString());
-    return fetchAPI(`/questions?${q}`);
+  getAdminDashboard: async () => {
+    return { stats: { totalUsers: 1000, totalTests: 29, totalAttempts: 45000, revenue: 25000 }, recentOrders: [], popularTests: mockTests.slice(0, 5) };
   },
-  getQuestion: (id: string) => fetchAPI(`/questions/${id}`),
-
-  // Tests
-  getTests: (params?: { examId?: string; type?: string; isFree?: boolean; page?: number }) => {
-    const q = new URLSearchParams();
-    if (params?.examId) q.set('examId', params.examId);
-    if (params?.type) q.set('type', params.type);
-    if (params?.isFree !== undefined) q.set('isFree', params.isFree.toString());
-    if (params?.page) q.set('page', params.page.toString());
-    return fetchAPI(`/tests?${q}`);
-  },
-  getTest: (id: string) => fetchAPI(`/tests?id=${id}`),
-  getTestBySlug: (slug: string) => fetchAPI(`/tests?slug=${slug}`),
-
-  // Attempts
-  startAttempt: (testId: string) =>
-    fetchAPI('/attempts/start', { method: 'POST', body: JSON.stringify({ testId }) }),
-  submitAttempt: (attemptId: string, data: { answers: any[]; timeTaken?: number }) =>
-    fetchAPI(`/attempts/${attemptId}/submit`, { method: 'POST', body: JSON.stringify(data) }),
-  getMyAttempts: (page?: number) => fetchAPI(`/attempts?page=${page || 1}`),
-  getAttempt: (id: string) => fetchAPI(`/attempts/${id}`),
-
-  // Plans
-  getPlans: () => fetchAPI('/plans'),
-
-  // Orders
-  createOrder: (planId: string, couponCode?: string) =>
-    fetchAPI('/orders/create', { method: 'POST', body: JSON.stringify({ planId, couponCode }) }),
-  getMyOrders: () => fetchAPI('/orders/my'),
-
-  // Bookmarks
-  getBookmarks: () => fetchAPI('/bookmarks'),
-  addBookmark: (data: { noteId?: string; questionId?: string }) =>
-    fetchAPI('/bookmarks', { method: 'POST', body: JSON.stringify(data) }),
-  removeBookmark: (id: string) => fetchAPI(`/bookmarks/${id}`, { method: 'DELETE' }),
-
-  // Notifications
-  getNotifications: () => fetchAPI('/notifications'),
-  markNotificationRead: (id: string) => fetchAPI(`/notifications/${id}/read`, { method: 'PATCH' }),
-  markAllNotificationsRead: () => fetchAPI('/notifications/read-all', { method: 'POST' }),
-
-  // Dashboard
-  getStudentDashboard: () => fetchAPI('/dashboard/student'),
-  getAdminDashboard: () => fetchAPI('/dashboard/admin'),
 
   // Support
-  createTicket: (subject: string, message: string) =>
-    fetchAPI('/support/tickets', { method: 'POST', body: JSON.stringify({ subject, message }) }),
-  getMyTickets: () => fetchAPI('/support/tickets/my'),
-  getTicket: (id: string) => fetchAPI(`/support/tickets/${id}`),
-  replyTicket: (id: string, message: string) =>
-    fetchAPI(`/support/tickets/${id}/reply`, { method: 'POST', body: JSON.stringify({ message }) }),
+  createTicket: async (subject: string, message: string) => ({ id: 'mock-ticket', status: 'open' }),
+  getMyTickets: async () => [],
+  getTicket: async (id: string) => null,
+  replyTicket: async (id: string, message: string) => {},
 
   // Blog
-  getBlogPosts: (page?: number) => fetchAPI(`/blog?page=${page || 1}`),
-  getBlogPost: (slug: string) => fetchAPI(`/blog/slug/${slug}`),
+  getBlogPosts: async (page?: number) => ({ data: [], total: 0 }),
+  getBlogPost: async (slug: string) => null,
 };

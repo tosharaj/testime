@@ -93,10 +93,9 @@ function EmailLogin() {
     setLoading(true); setError('');
     try {
       const res = await api.login(email, password);
-      localStorage.setItem('token', res.accessToken);
+      localStorage.setItem('token', res.token || '');
       localStorage.setItem('user', JSON.stringify(res.user));
-      if (res.user.role === 'STUDENT') router.push('/dashboard');
-      else router.push('/admin/dashboard');
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {
@@ -201,9 +200,7 @@ function PhoneLogin() {
     if (otpString.length !== 6) { setError('Enter complete 6-digit OTP'); return; }
     setLoading(true); setError('');
     try {
-      const res = await api.verifyPhoneOtp(phone, otpString);
-      localStorage.setItem('token', res.accessToken);
-      localStorage.setItem('user', JSON.stringify(res.user));
+      await api.verifyPhoneOtp(phone, otpString);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Invalid OTP');
@@ -328,10 +325,9 @@ function GoogleLogin() {
     setLoading(true); setError('');
     try {
       const res = await api.googleLogin(response.credential);
-      localStorage.setItem('token', res.accessToken);
+      localStorage.setItem('token', res.token || '');
       localStorage.setItem('user', JSON.stringify(res.user));
-      if (res.user.role === 'STUDENT') router.push('/dashboard');
-      else router.push('/admin/dashboard');
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Google login failed');
     } finally {

@@ -42,7 +42,7 @@ export default function AdminNcertPage() {
   const chapters = bookData?.chapters || [];
 
   const openLinkModal = (ch: typeof chapters[0]) => {
-    const stored = localStorage.getItem(`ncert_chapter_links_${ch.id}`);
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(`ncert_chapter_links_${ch.id}`) : null;
     const linkedIds: string[] = stored ? JSON.parse(stored) : [];
     setLinkModal({ chapterId: ch.id, chapterName: ch.name, linkedIds });
     setLinkSearch('');
@@ -63,6 +63,7 @@ export default function AdminNcertPage() {
   );
 
   const getLinkedCount = (chId: string) => {
+    if (typeof window === 'undefined') return 0;
     const stored = localStorage.getItem(`ncert_chapter_links_${chId}`);
     return stored ? JSON.parse(stored).length : 0;
   };

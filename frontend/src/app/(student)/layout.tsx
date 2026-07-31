@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { LayoutDashboard, BookOpen, BrainCircuit, BarChart3, ShoppingCart, User, LogOut, Bell, Menu, X, GraduationCap } from 'lucide-react';
 
@@ -21,14 +22,21 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || 'bypass';
-    if (!token) localStorage.setItem('token', 'bypass');
     const u = localStorage.getItem('user');
-    if (u) setUser(JSON.parse(u));
-    else setUser({ name: 'Demo User', email: 'demo@testime.com', role: 'student' });
+    if (u) { setUser(JSON.parse(u)); return; }
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        const name = data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User';
+        setUser({ name, email: data.user.email, role: 'student' });
+        localStorage.setItem('user', JSON.stringify({ name, email: data.user.email, role: 'student' }));
+      } else {
+        setUser({ name: 'Demo User', email: 'demo@testime.com', role: 'student' });
+      }
+    });
   }, [router]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     router.push('/login');

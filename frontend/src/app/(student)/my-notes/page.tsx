@@ -11,7 +11,7 @@ export default function MyNotesPage() {
   const [bookmarks, setBookmarks] = useState<any[]>([]);
 
   useEffect(() => {
-    api.getBookmarks().then(setBookmarks).catch(console.error);
+    api.getBookmarks().then(res => setBookmarks(res.data)).catch(console.error);
   }, []);
 
   const handleRemove = async (id: string) => {

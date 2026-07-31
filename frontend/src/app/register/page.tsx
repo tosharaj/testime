@@ -51,10 +51,9 @@ export default function RegisterPage() {
           callback: async (response: any) => {
             try {
               const res = await api.googleLogin(response.credential);
-              localStorage.setItem('token', res.accessToken);
+              localStorage.setItem('token', res.token || '');
               localStorage.setItem('user', JSON.stringify(res.user));
-              if (res.user.role === 'STUDENT') router.push('/dashboard');
-              else router.push('/admin/dashboard');
+              router.push('/dashboard');
             } catch (err: any) {
               setError(err.message || 'Google sign-up failed');
             } finally {
