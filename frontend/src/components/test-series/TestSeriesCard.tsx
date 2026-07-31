@@ -28,8 +28,6 @@ export default function TestSeriesCard({
   extraTestCount = 0,
   tintColor = '#e0f2fe',
 }: TestSeriesCardProps) {
-  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-
   const topTint = tintColor;
 
   return (
@@ -40,8 +38,8 @@ export default function TestSeriesCard({
       <div className="flex flex-col flex-1 p-5 pt-4">
         {/* 2. Top row: logo left, pill right */}
         <div className="flex items-center justify-between mb-3">
-          <div className="h-11 w-11 rounded-xl bg-brand-50 flex items-center justify-center text-sm font-bold text-brand-600 shrink-0">
-            {initials}
+          <div className="h-12 w-12 rounded-xl bg-white border border-surface-100 flex items-center justify-center overflow-hidden shrink-0">
+            <img src="/images/odisha_govt.png" alt="Odisha Govt." className="h-full w-full object-contain p-0.5" />
           </div>
           <div className="flex items-center gap-1.5 rounded-full bg-surface-100 px-3 py-1 text-xs font-medium text-surface-600">
             <Zap className="h-3 w-3 text-sunny-500" />
