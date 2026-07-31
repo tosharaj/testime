@@ -28,10 +28,10 @@ export default function MobileExamsAccordion({ onNavigate }: MobileExamsAccordio
       </button>
 
       {open && (
-        <div id="mobile-exams-accordion" className="ml-4 mt-0.5 space-y-0.5 border-l border-brand-200 pl-2">
+        <div id="mobile-exams-accordion" className="ml-4 mt-0.5 space-y-0.5 border-l border-brand-100 pl-2">
           <div className="flex items-center gap-1.5 px-3 py-2">
             <Sparkles className="h-3 w-3 text-sunny-500" />
-            <p className="text-[11px] font-black uppercase tracking-[0.15em] text-surface-400">Categories</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-surface-400">Categories</p>
           </div>
 
           <div className="flex flex-wrap gap-1.5 px-3 py-1">
@@ -40,9 +40,9 @@ export default function MobileExamsAccordion({ onNavigate }: MobileExamsAccordio
                 key={cat.slug}
                 type="button"
                 onClick={() => setActiveCategory(cat.slug)}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${
                   activeCategory === cat.slug
-                    ? 'bg-brand-50 text-brand-700 ring-2 ring-brand-200'
+                    ? `bg-gradient-to-br ${cat.gradientFrom} ${cat.gradientTo} text-white shadow-sm`
                     : 'bg-surface-100 text-surface-500 hover:bg-surface-200'
                 }`}
               >

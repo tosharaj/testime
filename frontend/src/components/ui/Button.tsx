@@ -7,13 +7,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-  primary: 'text-white bg-brand-500 hover:bg-brand-600 shadow-sm shadow-brand-500/10',
+  primary: 'text-white bg-brand-500 hover:bg-brand-600 shadow-sm shadow-brand-500/20',
   secondary: 'text-surface-700 bg-surface-100 hover:bg-surface-200',
-  outline: 'text-surface-600 bg-transparent border border-surface-300 hover:border-brand-400 hover:text-brand-600 hover:bg-brand-50/50',
+  outline: 'text-surface-600 bg-transparent border border-surface-300 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50',
   ghost: 'text-surface-400 hover:text-surface-600 hover:bg-surface-100',
-  danger: 'text-white bg-coral-500 hover:bg-coral-600 shadow-sm',
-  accent: 'text-white bg-accent-500 hover:bg-accent-600 shadow-sm shadow-accent-500/10',
-  cta: 'text-white bg-mint-500 hover:bg-mint-600 shadow-sm shadow-mint-500/10',
+  danger: 'text-white bg-coral-500 hover:bg-coral-600 shadow-sm shadow-coral-500/20',
+  accent: 'text-white bg-accent-500 hover:bg-accent-600 shadow-sm shadow-accent-500/20',
+  cta: 'text-white bg-mint-500 hover:bg-mint-600 shadow-sm shadow-mint-500/20',
   'primary-gradient': 'text-white bg-gradient-brand shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 hover:-translate-y-0.5',
   'accent-gradient': 'text-white bg-gradient-accent shadow-lg shadow-accent-500/20 hover:shadow-accent-500/30 hover:-translate-y-0.5',
 };

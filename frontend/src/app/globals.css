@@ -7,13 +7,13 @@
     @apply border-surface-200;
   }
   body {
-    @apply bg-surface-50 text-surface-800 antialiased;
+    @apply bg-[#FBFBFE] text-surface-700 antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight text-surface-900;
   }
   ::selection {
-    @apply bg-brand-500/10 text-brand-700;
+    @apply bg-brand-200/50 text-brand-800;
   }
 }
 
@@ -25,13 +25,13 @@
     @apply text-lg text-surface-500 max-w-2xl mx-auto leading-relaxed;
   }
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-brand-400;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-500 to-brand-300;
   }
   .gradient-text-accent {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-500 to-sunny-500;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-400 to-sunny-500;
   }
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-card-glass;
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-card-glass;
   }
   .glass-strong {
     @apply bg-white/90 backdrop-blur-xl border border-surface-200/50 shadow-card-glass;
@@ -40,14 +40,14 @@
     @apply bg-gradient-to-br from-white to-surface-50;
   }
   .hero-gradient {
-    background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #fdf2f8 100%);
+    background: linear-gradient(160deg, #EAF2FF 0%, #F3EFFF 45%, #FFF1F5 100%);
   }
   .dot-bg {
-    background-image: radial-gradient(circle, #cbd5e1 0.5px, transparent 0.5px);
-    background-size: 20px 20px;
+    background-image: radial-gradient(circle, #C2DAFF 0.5px, transparent 0.5px);
+    background-size: 22px 22px;
   }
   .shimmer {
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%);
     background-size: 200% 100%;
     animation: shimmer 2s linear infinite;
   }

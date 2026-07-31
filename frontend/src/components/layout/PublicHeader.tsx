@@ -56,15 +56,15 @@ export default function PublicHeader() {
   return (
     <header
       className={`sticky top-0 z-40 w-full transition-all duration-200 ${
-        scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
+        scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-[#FBFBFE]/90 backdrop-blur-sm'
       }`}
     >
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white text-xs font-bold">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-white text-sm font-bold shadow-sm shadow-brand-200">
             T
           </div>
-          <span className="text-base font-bold text-surface-900">Testime</span>
+          <span className="font-display text-lg font-bold text-surface-900">Testime</span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-0.5">
@@ -94,7 +94,7 @@ export default function PublicHeader() {
                     <ChevronDown className={`h-3.5 w-3.5 transition-transform ${pyqOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {pyqOpen && (
-                    <div className="absolute top-full left-0 mt-2 bg-white rounded-lg border border-surface-200 shadow-card py-1 min-w-[170px] animate-fade-in origin-top-left">
+                    <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl border border-surface-100 shadow-card-raised py-1 min-w-[170px] animate-fade-in origin-top-left">
                       <Link
                         href="/prelims"
                         onClick={() => setPyqOpen(false)}
@@ -133,21 +133,21 @@ export default function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <span className="hidden sm:flex items-center justify-center h-9 w-9 rounded-lg text-surface-300 cursor-not-allowed">
+          <span className="hidden sm:flex items-center justify-center h-9 w-9 rounded-xl text-surface-300 cursor-not-allowed">
             <Search className="h-4 w-4" />
           </span>
           {isLoggedIn ? (
             <div className="flex items-center gap-1.5">
               <Link
                 href="/dashboard"
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-brand-500 text-white px-4 py-2 text-sm font-medium hover:bg-brand-600 transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-brand-500 text-white px-4 py-2 text-sm font-medium hover:bg-brand-600 shadow-sm shadow-brand-200 transition-colors"
               >
                 <User className="h-4 w-4" />
                 Dashboard
               </Link>
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-surface-500 hover:text-coral-500 hover:bg-coral-50 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm text-surface-500 hover:text-coral-500 hover:bg-coral-50 transition-colors"
               >
                 <LogOut className="h-4 w-4" />
                 <span className="hidden sm:inline">Logout</span>
@@ -157,13 +157,13 @@ export default function PublicHeader() {
             <div className="flex items-center gap-1.5">
               <Link
                 href="/login"
-                className="rounded-lg px-4 py-2 text-sm font-medium text-surface-600 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                className="rounded-xl px-4 py-2 text-sm font-medium text-surface-600 hover:text-brand-600 hover:bg-brand-50 transition-colors"
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition-colors"
+                className="rounded-xl bg-gradient-to-r from-brand-400 to-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-brand-200 hover:shadow-md transition-all"
               >
                 Sign Up
               </Link>
@@ -179,7 +179,7 @@ export default function PublicHeader() {
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden border-t border-surface-200 bg-white animate-fade-in">
+        <div className="lg:hidden border-t border-surface-100 bg-white animate-fade-in">
           <nav className="px-4 py-2 space-y-0.5">
             {navItems.map((item) => {
               if (item.label === 'Exams') {

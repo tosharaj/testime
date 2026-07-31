@@ -33,9 +33,10 @@ export default function HomePage() {
     <div className="overflow-hidden">
       {/* ───── HERO ───── */}
       <section className="relative hero-gradient">
-        <div className="absolute inset-0 dot-bg opacity-30" />
-        <div className="absolute top-20 right-20 w-72 h-72 bg-brand-200/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-accent-200/10 rounded-full blur-3xl" />
+        <div className="absolute inset-0 dot-bg opacity-40" />
+        <div className="absolute top-20 right-20 w-72 h-72 bg-brand-200/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-accent-200/20 rounded-full blur-3xl" />
+        <div className="absolute top-40 left-1/4 w-64 h-64 bg-lavender-200/30 rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-20 lg:py-28">
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm border border-brand-200/50 shadow-sm px-4 py-1.5 text-xs font-medium text-brand-700 mb-6 animate-fade-in-down">
@@ -51,19 +52,19 @@ export default function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in-up">
               <Link href="/register">
-                <Button variant="primary-gradient" size="lg">
+                <Button variant="primary-gradient" size="lg" className="rounded-full">
                   Get Started Free
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/exams">
-                <Button variant="outline" size="lg">
+                <Button variant="outline" size="lg" className="rounded-full bg-white">
                   Browse Exams
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
-            <div className="flex items-center justify-center gap-6 mt-8 text-sm text-surface-400 animate-fade-in">
+            <div className="flex items-center justify-center gap-6 mt-8 text-sm text-surface-500 animate-fade-in">
               <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-mint-500" /> Free access</span>
               <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-mint-500" /> No credit card</span>
               <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-mint-500" /> Cancel anytime</span>
@@ -79,12 +80,12 @@ export default function HomePage() {
             {stats.map((s) => {
               const Icon = s.icon;
               return (
-                <Card key={s.label} variant="raised" className="hover:shadow-card-raised">
+                <Card key={s.label} variant="raised" className="hover:shadow-card-raised rounded-3xl">
                   <CardContent className="p-5 text-center">
-                    <div className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-surface-50 mb-3">
+                    <div className="inline-flex items-center justify-center h-11 w-11 rounded-2xl bg-white shadow-sm mb-3">
                       <Icon className={`h-5 w-5 bg-gradient-to-br ${s.gradient} bg-clip-text text-transparent`} />
                     </div>
-                    <p className="text-2xl font-bold text-surface-900">{s.value}</p>
+                    <p className="font-display text-2xl font-bold text-surface-900">{s.value}</p>
                     <p className="text-sm text-surface-500">{s.label}</p>
                   </CardContent>
                 </Card>
@@ -192,32 +193,32 @@ export default function HomePage() {
       </section>
 
       {/* ───── CTA ───── */}
-      <section className="relative overflow-hidden bg-surface-900 py-20 lg:py-24">
-        <div className="absolute inset-0 dot-bg opacity-[0.03]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-brand-500/10 via-accent-500/5 to-transparent rounded-full blur-3xl" />
+      <section className="relative overflow-hidden bg-gradient-cta py-20 lg:py-24">
+        <div className="absolute inset-0 dot-bg opacity-[0.05]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/10 rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-4 py-1.5 text-xs font-medium text-white/70 mb-6 backdrop-blur-sm">
-            <Sparkles className="h-3.5 w-3.5 text-sunny-400" />
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/20 px-4 py-1.5 text-xs font-medium text-white mb-6 backdrop-blur-sm">
+            <Sparkles className="h-3.5 w-3.5 text-sunny-300" />
             Start Your Journey Today
           </div>
           <h2 className="section-heading text-white mb-4">Ready to Ace Your Exams?</h2>
-          <p className="text-surface-400 text-lg max-w-lg mx-auto mb-8 leading-relaxed">
+          <p className="text-white/80 text-lg max-w-lg mx-auto mb-8 leading-relaxed">
             Join 10,00,000+ students taking the first step towards their dream career
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/pricing">
-              <Button variant="primary-gradient" size="lg">
+              <Button size="lg" className="rounded-full bg-white text-brand-700 hover:bg-brand-50 shadow-lg">
                 View Plans
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/register">
-              <Button variant="outline" size="lg" className="border-surface-600 text-white hover:bg-surface-800 hover:border-surface-500">
+              <Button variant="outline" size="lg" className="rounded-full border-white/40 text-white hover:bg-white/10 hover:border-white/60">
                 Create Free Account
               </Button>
             </Link>
           </div>
-          <div className="flex items-center justify-center gap-6 mt-8 text-xs text-surface-500">
+          <div className="flex items-center justify-center gap-6 mt-8 text-xs text-white/70">
             <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> Secure payment</span>
             <span className="flex items-center gap-1.5"><CheckCircle className="h-3.5 w-3.5" /> Cancel anytime</span>
             <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> 30-day refund</span>

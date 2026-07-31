@@ -54,10 +54,10 @@ export default function PublicFooter() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white text-xs font-bold">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-white text-xs font-bold shadow-sm shadow-brand-200">
                 T
               </div>
-              <span className="text-base font-bold text-surface-900">Testime</span>
+              <span className="font-display text-base font-bold text-surface-900">Testime</span>
             </Link>
             <p className="text-sm text-surface-500 leading-relaxed mb-5">
               Odisha&apos;s most advanced exam preparation platform. Empowering students to achieve their dreams.
