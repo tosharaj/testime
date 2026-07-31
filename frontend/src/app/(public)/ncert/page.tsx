@@ -69,8 +69,8 @@ export default function NcertPage() {
               <Card className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer h-full">
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="h-10 w-10 rounded-xl bg-ocean-50 flex items-center justify-center">
-                      <GraduationCap className="h-5 w-5 text-ocean-600" />
+                    <div className="h-11 w-11 rounded-xl bg-white border border-surface-100 flex items-center justify-center overflow-hidden">
+                      <img src="/images/ncert_logo.png" alt="NCERT" className="h-full w-full object-contain p-0.5" />
                     </div>
                     <Badge variant="default" size="sm">{c.bookCount} books</Badge>
                   </div>
