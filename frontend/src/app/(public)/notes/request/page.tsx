@@ -102,7 +102,7 @@ function RequestContent() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Field label="Type">
                     <select value={form.resourceType} onChange={e => setForm({ ...form, resourceType: e.target.value })} className="input-base">
-                      {['NOTES', 'BOOK', 'PYQ', 'SOLVED_PAPER', 'SYLLABUS', 'IMPORTANT_QUESTIONS', 'PDF', 'OTHER'].map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                      {['NOTES', 'BOOK', 'PYQ', 'SOLVED_PAPER', 'SYLLABUS', 'IMPORTANT_QUESTIONS', 'CURRENT_AFFAIRS', 'STATIC_GK', 'GOVERNMENT_SCHEMES', 'REPORTS_INDEXES', 'AWARDS_APPOINTMENTS', 'ODISHA_CURRENT_AFFAIRS', 'PDF', 'OTHER'].map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
                     </select>
                   </Field>
                   <Field label="Language">

@@ -78,10 +78,10 @@ export function FilterRail({ filters, onChange }: FilterRailProps) {
         {data.resourceTypes.map(t => (
           <Chip
             key={t.id}
-            active={filters.type === t.slug}
-            onClick={() => set({ type: filters.type === t.slug ? 'all' : t.slug })}
+            active={filters.type === t.type}
+            onClick={() => set({ type: filters.type === t.type ? 'all' : t.type })}
             label={t.name}
-            count={typeCounts[t.slug.toUpperCase()] || 0}
+            count={typeCounts[t.type] || 0}
           />
         ))}
       </Section>

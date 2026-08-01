@@ -15,7 +15,7 @@ const footerLinks = [
   {
     title: 'Study Material',
     links: [
-      { label: 'Study Notes', href: '/notes' },
+      { label: 'Notes & Resources', href: '/notes' },
       { label: 'Question Bank', href: '/questions' },
       { label: 'Test Series', href: '/test-series' },
       { label: 'NCERT Resources', href: '/ncert' },

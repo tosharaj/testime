@@ -16,7 +16,7 @@ function SearchContent() {
 
   const [filters, setFilters] = useState<FilterState>(() => ({
     query: searchParams.get('q') || '',
-    type: 'all',
+    type: searchParams.get('type') || 'all',
     language: 'all',
     format: 'all',
     access: 'all',
@@ -36,6 +36,10 @@ function SearchContent() {
     const q = searchParams.get('q');
     if (q !== null && q !== filters.query) {
       setFilters(f => ({ ...f, query: q, page: 1 }));
+    }
+    const t = searchParams.get('type');
+    if (t !== null && t !== filters.type) {
+      setFilters(f => ({ ...f, type: t, page: 1 }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);

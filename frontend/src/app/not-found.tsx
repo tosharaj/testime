@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FileQuestion } from 'lucide-react';
+import { FileQuestion, Home, BookOpen } from 'lucide-react';
 
 export default function NotFound() {
   return (
@@ -9,8 +9,15 @@ export default function NotFound() {
           <FileQuestion className="h-10 w-10 text-surface-400" />
         </div>
         <h1 className="text-4xl font-bold text-surface-900 mb-2">404</h1>
-        <p className="text-lg text-surface-500 mb-6">Page not found</p>
-        <Link href="/" className="inline-flex items-center gap-2 rounded-xl bg-brand-500 text-white px-6 py-2.5 text-sm font-semibold hover:bg-brand-600 transition-colors">Go Home</Link>
+        <p className="text-lg text-surface-500 mb-6">This page could not be found</p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Link href="/notes" className="inline-flex items-center gap-2 rounded-xl bg-brand-500 text-white px-6 py-2.5 text-sm font-semibold hover:bg-brand-600 transition-colors">
+            <BookOpen className="h-4 w-4" /> Notes &amp; Resources
+          </Link>
+          <Link href="/" className="inline-flex items-center gap-2 rounded-xl border-2 border-surface-200 bg-white text-surface-700 px-6 py-2.5 text-sm font-semibold hover:bg-surface-50 transition-colors">
+            <Home className="h-4 w-4" /> Go Home
+          </Link>
+        </div>
       </div>
     </div>
   );

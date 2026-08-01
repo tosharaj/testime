@@ -826,7 +826,7 @@ INSERT INTO resource_types (name, slug, sort_order) VALUES
   ('Syllabus','syllabus',10),
   ('Exam pattern','exam-pattern',11),
   ('Study plan','study-plan',12),
-  ('Current affairs PDF','current-affairs-pdf',13),
+  ('Current Affairs Monthly PDF','current-affairs-monthly-pdf',13),
   ('Static GK PDF','static-gk-pdf',14),
   ('Handwritten notes','handwritten-notes',15),
   ('Typed notes','typed-notes',16),

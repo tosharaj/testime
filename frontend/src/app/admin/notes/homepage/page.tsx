@@ -7,12 +7,13 @@ import Button from '@/components/ui/Button';
 import { getLibrary, saveHomepageSection } from '@/lib/notesStore';
 import type { HomepageSection, HomepageSectionSource } from '@/types/notes';
 
-const sources: HomepageSectionSource[] = ['latest', 'recently_updated', 'most_viewed', 'most_downloaded', 'most_saved', 'featured', 'revision_mode', 'current_affairs', 'pyqs', 'important_questions', 'manual'];
+const sources: HomepageSectionSource[] = ['latest', 'recently_updated', 'most_viewed', 'most_downloaded', 'most_saved', 'featured', 'revision_mode', 'current_affairs', 'current_affairs_revision', 'pyqs', 'important_questions', 'manual'];
 
 const sourceLabels: Record<HomepageSectionSource, string> = {
   latest: 'Latest', recently_updated: 'Recently Updated', most_viewed: 'Most Viewed',
   most_downloaded: 'Most Downloaded', most_saved: 'Most Saved', featured: 'Featured',
-  revision_mode: 'Revision Mode', current_affairs: 'Current Affairs', pyqs: 'PYQs',
+  revision_mode: 'Revision Mode', current_affairs: 'Current Affairs',
+  current_affairs_revision: 'Current Affairs Revision', pyqs: 'PYQs',
   important_questions: 'Important Questions', manual: 'Manual Selection',
 };
 

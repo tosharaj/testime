@@ -293,7 +293,7 @@ export default function AdminResourcesPage() {
                   <div>
                     <label className="block text-xs font-medium text-surface-500 mb-1.5">Type</label>
                     <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className="input-base">
-                      {getResourceTypes().map(t => <option key={t.id} value={t.slug.toUpperCase()}>{t.name}</option>)}
+                      {getResourceTypes().map(t => <option key={t.id} value={t.type}>{t.name}</option>)}
                     </select>
                   </div>
                   <div>

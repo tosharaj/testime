@@ -15,7 +15,7 @@ export interface BlogPost {
 
 const STORAGE_KEY = 'testime_blog_posts';
 
-export const blogCategories = ['Exam Tips', 'Current Affairs', 'Study Material', 'Notifications', 'Success Stories'];
+export const blogCategories = ['Exam Tips', 'Study Material', 'Notifications', 'Success Stories'];
 
 const seedPosts: BlogPost[] = [
   {
@@ -65,19 +65,19 @@ const seedPosts: BlogPost[] = [
   },
   {
     id: 'p3',
-    title: 'Top 10 Current Affairs Topics for Odisha Exams — July 2026',
-    slug: 'top-current-affairs-topics-july-2026',
-    excerpt: 'The most important national and Odisha-specific current affairs topics for the month of July that are highly likely to be asked in exams.',
-    category: 'Current Affairs',
-    tags: 'Current Affairs,Odisha',
+    title: 'How to Revise Current Affairs with Monthly PDFs',
+    slug: 'revise-current-affairs-monthly-pdfs',
+    excerpt: 'A practical revision plan using monthly current affairs compilations, static GK sheets and topic-wise CA resources instead of daily news.',
+    category: 'Exam Tips',
+    tags: 'Current Affairs,Revision',
     author: 'Testime Team',
-    content: `<h2>Odisha-Specific News</h2>
-    <p>State-level current affairs carry significant weightage in Odisha competitive exams. Focus on cabinet decisions, budget allocations, and new schemes.</p>
+    content: `<h2>Odisha-Specific Focus</h2>
+    <p>State-level current affairs carry significant weightage in Odisha competitive exams. Focus on cabinet decisions, budget allocations, and new schemes in your monthly compilations.</p>
     <ul><li>Odisha Cabinet approved 15 major infrastructure projects worth ₹8,500 crore</li><li>Odisha State Climate Action Plan 2.0 launched with a 40% emission cut target by 2035</li><li>New medical colleges announced in four underserved districts</li></ul>
     <h2>National News</h2>
     <ul><li>India and ASEAN signed a comprehensive economic partnership agreement</li><li>Supreme Court expanded fundamental rights to include digital privacy</li><li>RBI kept repo rate unchanged at 6.25%</li></ul>
     <h2>How to Revise Effectively</h2>
-    <p>Read the Testime daily current affairs briefing every morning, make 5-point notes, and revise them every Sunday. Attempt the daily quiz to reinforce learning.</p>`,
+    <p>Read the monthly current affairs PDF from the Notes &amp; Resources library, make 5-point notes, and revise them every Sunday. Follow the Current Affairs Revision section for static GK, government schemes, reports &amp; indexes, and awards &amp; appointments.</p>`,
     isPublished: true,
     publishedAt: '2026-07-10T09:00:00.000Z',
     createdAt: '2026-07-09T09:00:00.000Z',

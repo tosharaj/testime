@@ -24,7 +24,6 @@ const navGroups = [
       { label: 'Categories', href: '/admin/content/categories', icon: FileText },
       { label: 'Blog', href: '/admin/blog', icon: Newspaper },
       { label: 'NCERT', href: '/admin/ncert', icon: BookCheck },
-      { label: 'Current Affairs', href: '/admin/current-affairs', icon: Newspaper },
       { label: 'Media', href: '/admin/media', icon: Image },
     ],
   },

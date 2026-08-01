@@ -128,7 +128,7 @@ function NotesHomeContent() {
         <nav className="mb-8 flex items-center gap-1.5 text-sm text-surface-400">
           <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
           <ChevronRight className="h-3.5 w-3.5" />
-          <span className="font-medium text-surface-600">Notes &amp; PDFs</span>
+          <span className="font-medium text-surface-600">Notes &amp; Resources</span>
         </nav>
 
         {/* Hero — crayon box */}
@@ -153,7 +153,7 @@ function NotesHomeContent() {
           <div className="relative max-w-2xl">
             <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border-2 border-surface-200 bg-white/80 px-3 py-1 text-xs font-bold text-brand-600 shadow-sm backdrop-blur">
               <Layers className="h-3.5 w-3.5" />
-              Notes &amp; PDF Resource Library
+              Notes &amp; Resources Library
             </div>
             <h1 className="font-display text-3xl lg:text-5xl font-bold text-surface-900 mb-4 leading-tight text-balance">
               Every note you need, <span className="bg-gradient-to-r from-coral-500 via-sunny-500 to-mint-500 bg-clip-text text-transparent">one search away</span>

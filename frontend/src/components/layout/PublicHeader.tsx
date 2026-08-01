@@ -1,17 +1,20 @@
 'use client';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, Search, User, ChevronDown, LogOut, BookOpen, PenTool } from 'lucide-react';
+import { Menu, X, Search, User, ChevronDown, LogOut, BookOpen, PenTool, MoreHorizontal } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import ExamsMegaMenu from './mega-menu/ExamsMegaMenu';
 import MobileExamsAccordion from './mega-menu/MobileExamsAccordion';
 
 const navItems = [
   { label: 'Exams', href: '/exams' },
-  { label: 'Daily Current Affairs', href: '/current-affairs' },
-  { label: 'Notes', href: '/notes' },
-  { label: 'Previous Year Questions', href: '/questions' },
   { label: 'Test Series', href: '/test-series' },
+  { label: 'Notes & Resources', href: '/notes' },
+  { label: 'Books', href: '/notes/search?type=BOOK' },
+];
+
+const moreItems = [
+  { label: 'Previous Year Questions', href: '/questions' },
   { label: 'Pricing', href: '/pricing' },
 ];
 
@@ -19,9 +22,9 @@ export default function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [pyqOpen, setPyqOpen] = useState(false);
-  const [mobilePyqOpen, setMobilePyqOpen] = useState(false);
-  const pyqDropdownRef = useRef<HTMLDivElement>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
+  const moreDropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -34,15 +37,15 @@ export default function PublicHeader() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (pyqDropdownRef.current && !pyqDropdownRef.current.contains(e.target as Node)) setPyqOpen(false);
+      if (moreDropdownRef.current && !moreDropdownRef.current.contains(e.target as Node)) setMoreOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
-    setPyqOpen(false);
-    setMobilePyqOpen(false);
+    setMoreOpen(false);
+    setMobileMoreOpen(false);
   }, [pathname]);
 
   const handleLogout = () => {
@@ -69,51 +72,13 @@ export default function PublicHeader() {
 
         <nav className="hidden lg:flex items-center gap-0.5">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            const isActive = pathname === item.href || pathname.startsWith(item.href.split('?')[0] + '/');
             if (item.label === 'Exams') {
               return (
                 <ExamsMegaMenu
                   key={item.href}
                   className={isExamsActive ? 'text-brand-600' : undefined}
                 />
-              );
-            }
-            if (item.label === 'Previous Year Questions') {
-              const isPyqActive = pathname === '/questions' || pathname.startsWith('/questions/');
-              return (
-                <div key={item.href} className="relative" ref={pyqDropdownRef}>
-                  <button
-                    onClick={() => setPyqOpen(!pyqOpen)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      isPyqActive
-                        ? 'text-brand-600 bg-brand-50'
-                        : 'text-surface-600 hover:text-brand-600 hover:bg-brand-50'
-                    }`}
-                  >
-                    {item.label}
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${pyqOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  {pyqOpen && (
-                    <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl border border-surface-100 shadow-card-raised py-1 min-w-[170px] animate-fade-in origin-top-left">
-                      <Link
-                        href="/prelims"
-                        onClick={() => setPyqOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-surface-700 hover:text-brand-600 hover:bg-brand-50 transition-colors"
-                      >
-                        <BookOpen className="h-4 w-4" />
-                        Prelim
-                      </Link>
-                      <Link
-                        href="/mains"
-                        onClick={() => setPyqOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-surface-700 hover:text-brand-600 hover:bg-brand-50 transition-colors"
-                      >
-                        <PenTool className="h-4 w-4" />
-                        Mains
-                      </Link>
-                    </div>
-                  )}
-                </div>
               );
             }
             return (
@@ -130,6 +95,34 @@ export default function PublicHeader() {
               </Link>
             );
           })}
+          <div className="relative" ref={moreDropdownRef}>
+            <button
+              onClick={() => setMoreOpen(!moreOpen)}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                moreOpen
+                  ? 'text-brand-600 bg-brand-50'
+                  : 'text-surface-600 hover:text-brand-600 hover:bg-brand-50'
+              }`}
+            >
+              More
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {moreOpen && (
+              <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl border border-surface-100 shadow-card-raised py-1 min-w-[200px] animate-fade-in origin-top-left">
+                {moreItems.map((mi) => (
+                  <Link
+                    key={mi.href}
+                    href={mi.href}
+                    onClick={() => setMoreOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 text-sm text-surface-700 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                  >
+                    {mi.label === 'Previous Year Questions' ? <BookOpen className="h-4 w-4" /> : <MoreHorizontal className="h-4 w-4" />}
+                    {mi.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -190,39 +183,6 @@ export default function PublicHeader() {
                   />
                 );
               }
-              if (item.label === 'Previous Year Questions') {
-                return (
-                  <div key={item.href}>
-                    <button
-                      onClick={() => setMobilePyqOpen(!mobilePyqOpen)}
-                      className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-surface-600 hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors"
-                    >
-                      <span>Previous Year Questions</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform ${mobilePyqOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    {mobilePyqOpen && (
-                      <div className="ml-4 mt-0.5 space-y-0.5 border-l border-brand-200 pl-2">
-                        <Link
-                          href="/prelims"
-                          onClick={() => { setMobileOpen(false); setMobilePyqOpen(false); }}
-                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-surface-600 hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors"
-                        >
-                          <BookOpen className="h-4 w-4" />
-                          Prelim
-                        </Link>
-                        <Link
-                          href="/mains"
-                          onClick={() => { setMobileOpen(false); setMobilePyqOpen(false); }}
-                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-surface-600 hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors"
-                        >
-                          <PenTool className="h-4 w-4" />
-                          Mains
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
               return (
                 <Link
                   key={item.href}
@@ -234,6 +194,30 @@ export default function PublicHeader() {
                 </Link>
               );
             })}
+            <div>
+              <button
+                onClick={() => setMobileMoreOpen(!mobileMoreOpen)}
+                className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-surface-600 hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors"
+              >
+                <span>More</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${mobileMoreOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileMoreOpen && (
+                <div className="ml-4 mt-0.5 space-y-0.5 border-l border-brand-200 pl-2">
+                  {moreItems.map((mi) => (
+                    <Link
+                      key={mi.href}
+                      href={mi.href}
+                      onClick={() => { setMobileOpen(false); setMobileMoreOpen(false); }}
+                      className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-surface-600 hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors"
+                    >
+                      {mi.label === 'Previous Year Questions' ? <BookOpen className="h-4 w-4" /> : <PenTool className="h-4 w-4" />}
+                      {mi.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
         </div>
       )}

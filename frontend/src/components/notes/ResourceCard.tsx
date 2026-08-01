@@ -3,7 +3,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import {
   FileText, BookOpen, ClipboardList, CheckSquare, ScrollText, HelpCircle,
-  Zap, Map, Newspaper, File, Bookmark, BookmarkCheck, Download, Share2,
+  Zap, Map, Newspaper, Landmark, BarChart3, Award, MapPin, BookMarked,
+  File, Bookmark, BookmarkCheck, Download, Share2,
   Flag, Eye, ShieldCheck, Languages, FileType2, Calendar, LayoutGrid,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -18,7 +19,10 @@ import { formatDate } from '@/lib/utils';
 const typeIcons: Record<string, LucideIcon> = {
   NOTES: FileText, BOOK: BookOpen, PYQ: ClipboardList, SOLVED_PAPER: CheckSquare,
   SYLLABUS: ScrollText, IMPORTANT_QUESTIONS: HelpCircle, SHORT_NOTES: Zap,
-  MIND_MAP: Map, CURRENT_AFFAIRS: Newspaper, PDF: File, OTHER: File,
+  MIND_MAP: Map, CURRENT_AFFAIRS: Newspaper, STATIC_GK: BookMarked,
+  GOVERNMENT_SCHEMES: Landmark, REPORTS_INDEXES: BarChart3,
+  AWARDS_APPOINTMENTS: Award, ODISHA_CURRENT_AFFAIRS: MapPin,
+  PDF: File, OTHER: File,
 };
 
 interface ResourceCardProps {

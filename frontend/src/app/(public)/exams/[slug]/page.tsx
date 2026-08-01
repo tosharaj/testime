@@ -60,7 +60,7 @@ export default function ExamDetailPage() {
     { id: 'test-series', title: 'Test Series', desc: 'Full-length and sectional mock tests with analysis', icon: BrainCircuit, href: `/test-series?examId=${exam.id}`, color: 'bg-ocean-50 text-ocean-600 border-ocean-200' },
     { id: 'notes', title: 'Study Notes', desc: 'Topic-wise notes for every subject in the syllabus', icon: BookOpen, href: `/notes?examId=${exam.id}`, color: 'bg-brand-50 text-brand-600 border-brand-200' },
     { id: 'questions', title: 'Question Bank', desc: 'PYQs and practice questions with solutions', icon: FileText, href: `/questions?examId=${exam.id}`, color: 'bg-coral-50 text-coral-600 border-coral-200' },
-    { id: 'current-affairs', title: 'Current Affairs', desc: 'Daily national & Odisha news for exams', icon: CalendarClock, href: '/current-affairs', color: 'bg-mint-50 text-mint-600 border-mint-200' },
+    { id: 'current-affairs', title: 'Current Affairs Revision', desc: 'Monthly CA PDFs, static GK, schemes, reports & awards', icon: CalendarClock, href: '/notes/search?type=CURRENT_AFFAIRS', color: 'bg-mint-50 text-mint-600 border-mint-200' },
   ];
 
   const related = category?.exams.filter(e => e.slug !== exam.slug).slice(0, 6) || [];

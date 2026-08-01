@@ -1,6 +1,6 @@
 // ─── NOTES & PDF RESOURCE LIBRARY TYPES ─────────────────────────────────────
 
-export type ResourceType = 'NOTES' | 'BOOK' | 'PYQ' | 'SOLVED_PAPER' | 'SYLLABUS' | 'IMPORTANT_QUESTIONS' | 'SHORT_NOTES' | 'MIND_MAP' | 'CURRENT_AFFAIRS' | 'PDF' | 'OTHER';
+export type ResourceType = 'NOTES' | 'BOOK' | 'PYQ' | 'SOLVED_PAPER' | 'SYLLABUS' | 'IMPORTANT_QUESTIONS' | 'SHORT_NOTES' | 'MIND_MAP' | 'CURRENT_AFFAIRS' | 'STATIC_GK' | 'GOVERNMENT_SCHEMES' | 'REPORTS_INDEXES' | 'AWARDS_APPOINTMENTS' | 'ODISHA_CURRENT_AFFAIRS' | 'PDF' | 'OTHER';
 export type LanguageCode = 'en' | 'hi' | 'or' | 'bn' | 'te' | 'ta' | 'ml';
 export type FileFormat = 'PDF' | 'DOC' | 'DOCX' | 'PPT' | 'PPTX' | 'XLS' | 'XLSX' | 'ZIP' | 'EPUB' | 'IMAGE';
 export type Visibility = 'public' | 'signed_in' | 'restricted' | 'premium_ready';
@@ -273,7 +273,7 @@ export interface ResourceReport {
 
 export type HomepageSectionSource =
   | 'latest' | 'recently_updated' | 'most_viewed' | 'most_downloaded' | 'most_saved'
-  | 'featured' | 'revision_mode' | 'current_affairs' | 'pyqs' | 'important_questions' | 'manual';
+  | 'featured' | 'revision_mode' | 'current_affairs' | 'current_affairs_revision' | 'pyqs' | 'important_questions' | 'manual';
 
 export interface HomepageSection {
   id: string;
@@ -320,6 +320,7 @@ export interface ResourceTypeDef {
   id: string;
   name: string;
   slug: string;
+  type: ResourceType;
   description?: string;
   sortOrder: number;
 }

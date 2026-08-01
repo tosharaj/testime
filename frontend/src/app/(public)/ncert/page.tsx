@@ -131,8 +131,8 @@ export default function NcertPage() {
               <h3 className="font-bold text-surface-900 text-lg mb-1">Why NCERT First?</h3>
               <p className="text-sm text-surface-500">85% of competitive exam questions are directly or indirectly based on NCERT concepts. Master the foundation first.</p>
             </div>
-            <Link href="/current-affairs">
-              <Button variant="outline">Explore Current Affairs <ArrowRight className="h-4 w-4 ml-1" /></Button>
+            <Link href="/notes">
+              <Button variant="outline">Explore Notes & Resources <ArrowRight className="h-4 w-4 ml-1" /></Button>
             </Link>
           </div>
         </div>

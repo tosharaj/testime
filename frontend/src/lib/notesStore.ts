@@ -7,6 +7,7 @@ import type {
 } from '@/types/notes';
 
 const STORAGE_KEY = 'testime_notes_library';
+const NOTES_LIBRARY_VERSION = 2;
 
 export function slugify(title: string) {
   return title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -145,17 +146,22 @@ function seedLibrary(): NotesLibrary {
   ];
 
   const resourceTypes: ResourceTypeDef[] = [
-    { id: 'rt-notes', name: 'Notes', slug: 'notes', description: 'Comprehensive study notes', sortOrder: 1 },
-    { id: 'rt-book', name: 'Book', slug: 'book', description: 'Full books and ebooks', sortOrder: 2 },
-    { id: 'rt-pyq', name: 'PYQ', slug: 'pyq', description: 'Previous year questions', sortOrder: 3 },
-    { id: 'rt-solved-paper', name: 'Solved Paper', slug: 'solved-paper', description: 'Fully solved question papers', sortOrder: 4 },
-    { id: 'rt-syllabus', name: 'Syllabus', slug: 'syllabus', description: 'Syllabus documents', sortOrder: 5 },
-    { id: 'rt-important-questions', name: 'Important Questions', slug: 'important-questions', description: 'Exam-important question banks', sortOrder: 6 },
-    { id: 'rt-short-notes', name: 'Short Notes', slug: 'short-notes', description: 'Quick revision short notes', sortOrder: 7 },
-    { id: 'rt-mind-map', name: 'Mind Map', slug: 'mind-map', description: 'Visual mind maps for revision', sortOrder: 8 },
-    { id: 'rt-current-affairs', name: 'Current Affairs', slug: 'current-affairs', description: 'Current affairs compilations', sortOrder: 9 },
-    { id: 'rt-pdf', name: 'PDF', slug: 'pdf', description: 'General PDF documents', sortOrder: 10 },
-    { id: 'rt-other', name: 'Other', slug: 'other', description: 'Other resource types', sortOrder: 11 },
+    { id: 'rt-notes', name: 'Notes', slug: 'notes', type: 'NOTES', description: 'Comprehensive study notes', sortOrder: 1 },
+    { id: 'rt-book', name: 'Book', slug: 'book', type: 'BOOK', description: 'Full books and ebooks', sortOrder: 2 },
+    { id: 'rt-pyq', name: 'PYQ', slug: 'pyq', type: 'PYQ', description: 'Previous year questions', sortOrder: 3 },
+    { id: 'rt-solved-paper', name: 'Solved Paper', slug: 'solved-paper', type: 'SOLVED_PAPER', description: 'Fully solved question papers', sortOrder: 4 },
+    { id: 'rt-syllabus', name: 'Syllabus', slug: 'syllabus', type: 'SYLLABUS', description: 'Syllabus documents', sortOrder: 5 },
+    { id: 'rt-important-questions', name: 'Important Questions', slug: 'important-questions', type: 'IMPORTANT_QUESTIONS', description: 'Exam-important question banks', sortOrder: 6 },
+    { id: 'rt-short-notes', name: 'Short Notes', slug: 'short-notes', type: 'SHORT_NOTES', description: 'Quick revision short notes', sortOrder: 7 },
+    { id: 'rt-mind-map', name: 'Mind Map', slug: 'mind-map', type: 'MIND_MAP', description: 'Visual mind maps for revision', sortOrder: 8 },
+    { id: 'rt-current-affairs', name: 'Current Affairs Monthly PDFs', slug: 'current-affairs-monthly-pdfs', type: 'CURRENT_AFFAIRS', description: 'Verified monthly current affairs compilations and revision PDFs', sortOrder: 9 },
+    { id: 'rt-odisha-ca', name: 'Odisha Current Affairs', slug: 'odisha-current-affairs', type: 'ODISHA_CURRENT_AFFAIRS', description: 'Odisha-specific current affairs compilations', sortOrder: 10 },
+    { id: 'rt-static-gk', name: 'Static GK', slug: 'static-gk', type: 'STATIC_GK', description: 'Static general knowledge references', sortOrder: 11 },
+    { id: 'rt-govt-schemes', name: 'Government Schemes', slug: 'government-schemes', type: 'GOVERNMENT_SCHEMES', description: 'Central and Odisha government schemes', sortOrder: 12 },
+    { id: 'rt-reports-indexes', name: 'Reports & Indexes', slug: 'reports-indexes', type: 'REPORTS_INDEXES', description: 'Reports, indexes and rankings', sortOrder: 13 },
+    { id: 'rt-awards-appointments', name: 'Awards & Appointments', slug: 'awards-appointments', type: 'AWARDS_APPOINTMENTS', description: 'Awards, honours and appointments', sortOrder: 14 },
+    { id: 'rt-pdf', name: 'PDF', slug: 'pdf', type: 'PDF', description: 'General PDF documents', sortOrder: 15 },
+    { id: 'rt-other', name: 'Other', slug: 'other', type: 'OTHER', description: 'Other resource types', sortOrder: 16 },
   ];
 
   const languages: LanguageDef[] = [
@@ -362,6 +368,50 @@ function seedLibrary(): NotesLibrary {
       stats: { views: 540, downloads: 0, saves: 0, shares: 0 }, tags: ['important-questions', 'revision'],
       createdAt: now('2026-07-10T09:00:00Z'), updatedAt: now('2026-07-20T09:00:00Z'),
     }),
+    r('res-22', 'Current Affairs Compilation — June 2026', 'current-affairs-compilation-june-2026', 'CURRENT_AFFAIRS', 44, {
+      shortDesc: 'Monthly current affairs PDF covering national news, economy, polity and Odisha updates for June 2026.',
+      examCategoryId: 'cat-odisha', examId: 'ex-ossc', stageId: 'st-ossc-prelims',
+      contributorName: 'Testime Content Team', sourceAttribution: 'Compiled from verified public sources', isVerified: true,
+      stats: { views: 1860, downloads: 940, saves: 210, shares: 55 }, tags: ['current-affairs', 'monthly-pdf', 'june-2026'],
+      createdAt: now('2026-07-02T09:00:00Z'), publishedAt: now('2026-07-04T09:00:00Z'),
+    }),
+    r('res-23', 'Odisha Current Affairs — Monthly Compilation', 'odisha-current-affairs-monthly-compilation', 'ODISHA_CURRENT_AFFAIRS', 28, {
+      shortDesc: 'Odisha-specific current affairs — government decisions, schemes, appointments and events, month-wise.',
+      examCategoryId: 'cat-odisha', examId: 'ex-ossc', stageId: 'st-ossc-prelims',
+      contributorName: 'Testime Content Team', sourceAttribution: 'Compiled from verified public sources', isVerified: true,
+      stats: { views: 1420, downloads: 730, saves: 180, shares: 40 }, tags: ['odisha', 'current-affairs', 'monthly'],
+      createdAt: now('2026-07-05T09:00:00Z'), publishedAt: now('2026-07-07T09:00:00Z'),
+    }),
+    r('res-24', 'Static GK — Indian Polity & Constitution', 'static-gk-indian-polity-constitution', 'STATIC_GK', 60, {
+      shortDesc: 'Static GK revision covering the Constitution, Parliament, Judiciary and key articles for all Odisha exams.',
+      examCategoryId: 'cat-odisha', examId: 'ex-ossc', stageId: 'st-ossc-prelims',
+      subjectId: 'sub-odisha-gk',
+      contributorName: 'Testime Content Team', sourceAttribution: 'Based on NCERT and public domain sources', isVerified: true,
+      stats: { views: 2210, downloads: 1120, saves: 260, shares: 70 }, tags: ['static-gk', 'polity', 'constitution'],
+      createdAt: now('2026-06-20T09:00:00Z'), publishedAt: now('2026-06-22T09:00:00Z'),
+    }),
+    r('res-25', 'Government Schemes of Odisha — Master List', 'government-schemes-of-odisha-master-list', 'GOVERNMENT_SCHEMES', 34, {
+      shortDesc: 'State and central government schemes relevant for Odisha exams — scheme names, implementing departments and highlights.',
+      examCategoryId: 'cat-odisha', examId: 'ex-ossc', stageId: 'st-ossc-prelims',
+      subjectId: 'sub-odisha-gk',
+      contributorName: 'Testime Content Team', sourceAttribution: 'Compiled from official scheme documents', isVerified: true,
+      stats: { views: 1780, downloads: 880, saves: 200, shares: 45 }, tags: ['government-schemes', 'odisha', 'gk'],
+      createdAt: now('2026-06-25T09:00:00Z'), publishedAt: now('2026-06-27T09:00:00Z'),
+    }),
+    r('res-26', 'Reports & Indexes 2026 — Quick Revision', 'reports-indexes-2026-quick-revision', 'REPORTS_INDEXES', 22, {
+      shortDesc: 'Latest national and international reports, indexes and rankings with key facts for exams.',
+      examCategoryId: 'cat-odisha', examId: 'ex-ossc', stageId: 'st-ossc-prelims',
+      contributorName: 'Testime Content Team', sourceAttribution: 'Compiled from verified public sources', isVerified: true,
+      stats: { views: 1330, downloads: 690, saves: 160, shares: 35 }, tags: ['reports', 'indexes', 'rankings'],
+      createdAt: now('2026-07-08T09:00:00Z'), publishedAt: now('2026-07-10T09:00:00Z'),
+    }),
+    r('res-27', 'Awards & Appointments 2026 — Recap', 'awards-appointments-2026-recap', 'AWARDS_APPOINTMENTS', 26, {
+      shortDesc: 'Important awards, honours and appointments of 2026 — people, organisations and key positions.',
+      examCategoryId: 'cat-odisha', examId: 'ex-ossc', stageId: 'st-ossc-prelims',
+      contributorName: 'Testime Content Team', sourceAttribution: 'Compiled from verified public sources', isVerified: true,
+      stats: { views: 1580, downloads: 810, saves: 190, shares: 50 }, tags: ['awards', 'appointments', '2026'],
+      createdAt: now('2026-07-12T09:00:00Z'), publishedAt: now('2026-07-14T09:00:00Z'),
+    }),
   ];
 
   const homepageSections: HomepageSection[] = [
@@ -369,6 +419,11 @@ function seedLibrary(): NotesLibrary {
     { id: 'hs-2', title: 'Most Saved', subtitle: 'Resources students are bookmarking the most', source: 'most_saved', limit: 6, sortOrder: 2, isActive: true, createdAt: now('2026-06-01T09:00:00Z') },
     { id: 'hs-3', title: 'Popular Downloads', subtitle: 'High-demand PDFs and notes', source: 'most_downloaded', limit: 6, sortOrder: 3, isActive: true, createdAt: now('2026-06-01T09:00:00Z') },
     { id: 'hs-4', title: 'Featured Resources', subtitle: 'Editor-picked essentials', source: 'featured', limit: 4, sortOrder: 4, isActive: true, createdAt: now('2026-06-01T09:00:00Z') },
+    {
+      id: 'hs-5', title: 'Current Affairs Revision',
+      subtitle: 'Monthly PDFs, static GK, government schemes, reports & indexes, awards and Odisha current affairs for quick revision.',
+      source: 'current_affairs_revision', limit: 6, sortOrder: 5, isActive: true, createdAt: now('2026-07-01T09:00:00Z'),
+    },
   ];
 
   const revisionCampaigns: RevisionCampaign[] = [
@@ -438,6 +493,7 @@ function seedLibrary(): NotesLibrary {
   ];
 
   return {
+    schemaVersion: NOTES_LIBRARY_VERSION,
     examCategories: cats, exams, examStages: stages, institutions, courses, majors, semesters,
     subjects, units, topics, resources, resourceTypes, languages, formats,
     homepageSections, revisionCampaigns, contributions, requests, reports,
@@ -448,6 +504,7 @@ function seedLibrary(): NotesLibrary {
 // ─── STORE ─────────────────────────────────────────────────────────────────
 
 export interface NotesLibrary {
+  schemaVersion: number;
   examCategories: ExamCategory[];
   exams: Exam[];
   examStages: ExamStage[];
@@ -487,6 +544,11 @@ function load(): NotesLibrary {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      if (parsed.schemaVersion !== NOTES_LIBRARY_VERSION) {
+        cached = seedLibrary();
+        save(cached);
+        return cached;
+      }
       const seed = seedLibrary();
       // merge seed defaults so new fields survive across versions
       cached = { ...seed, ...parsed, userProfile: { ...seed.userProfile, ...(parsed.userProfile || {}) } };
@@ -616,6 +678,9 @@ export function getSectionResources(section: HomepageSection): Resource[] {
       break;
     case 'current_affairs':
       result = list.filter(r => r.type === 'CURRENT_AFFAIRS');
+      break;
+    case 'current_affairs_revision':
+      result = list.filter(r => r.type === 'CURRENT_AFFAIRS' || r.type === 'ODISHA_CURRENT_AFFAIRS' || r.type === 'STATIC_GK' || r.type === 'GOVERNMENT_SCHEMES' || r.type === 'REPORTS_INDEXES' || r.type === 'AWARDS_APPOINTMENTS');
       break;
     case 'manual':
       result = section.resourceIds?.map(id => data.resources.find(r => r.id === id)).filter((x): x is Resource => !!x && x.isPublished) || [];

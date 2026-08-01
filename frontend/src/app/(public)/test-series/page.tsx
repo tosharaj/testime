@@ -9,9 +9,9 @@ import CrayonStick from '@/components/ui/CrayonStick';
 import { crayon } from '@/lib/crayon';
 
 const previewMap: Record<string, string[]> = {
-  ossc: ['Full Mock Tests (OSSC CGL, CHSL)', 'Sectional Tests (Arithmetic, Reasoning)', 'Topic-wise Tests (Current Affairs)', 'PYQ Tests (2021–2024)'],
+  ossc: ['Full Mock Tests (OSSC CGL, CHSL)', 'Sectional Tests (Arithmetic, Reasoning)', 'Topic-wise Tests (Current Affairs Revision)', 'PYQ Tests (2021–2024)'],
   osssc: ['Full Mock Tests (RI, ARI, Amin)', 'Sectional Tests (Odia Language)', 'Topic-wise Assessments', 'PYQ Papers with Solutions'],
-  opsc: ['GS Prelims Full Mocks', 'CSAT Sectional Tests', 'OPSC OCS Mock Series', 'Odisha-specific Current Affairs'],
+  opsc: ['GS Prelims Full Mocks', 'CSAT Sectional Tests', 'OPSC OCS Mock Series', 'Current Affairs Revision Tests'],
   ssb: ['Teacher Eligibility Mocks', 'Pedagogy Sectional Tests', 'Subject-wise Assessments', 'OTET & CTET Pattern Tests'],
   'odisha-police': ['SI & Constable Mocks', 'GK & Law Sectionals', 'Physical Test Guides', 'Previous Year Papers'],
   'odisha-teaching': ['OTET Full Mocks', 'Teaching Aptitude Tests', 'B.Ed Entrance Papers', 'Subject Pedagogy Tests'],

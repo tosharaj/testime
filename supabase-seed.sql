@@ -22,7 +22,6 @@ INSERT INTO tests (id, title, slug, description, exam_id, stage, test_type, dura
 ('7', 'OSSC Current Affairs Topic-wise', 'ossc-current-affairs-topic', 'Topic-wise test covering current affairs for Odisha exams.', 'ossc', 'Prelims', 'topic-wise', 20, 30, 15, 'easy', true, null, 3210, 'Pre-Exam', 1, true),
 ('8', 'OSSC CGL 2022 PYQ Test', 'ossc-cgl-2022-pyq', 'Previous year questions from OSSC CGL 2022 exam.', 'ossc', 'Prelims', 'pyq-test', 60, 100, 50, 'medium', true, 0.25, 5432, 'Pre-Exam', 1, true),
 ('9', 'OSSC CGL 2021 PYQ Test', 'ossc-cgl-2021-pyq', 'Previous year questions from OSSC CGL 2021 exam.', 'ossc', 'Prelims', 'pyq-test', 60, 100, 50, 'medium', false, 0.25, 4123, 'Pre-Exam', 2, true),
-('10', 'Daily Current Affairs Quiz #1', 'daily-current-affairs-1', 'Daily quiz on current affairs for Odisha exams.', 'ossc', 'Prelims', 'daily-challenge', 10, 15, 10, 'easy', true, null, 890, 'Pre-Exam', 1, true),
 ('11', 'OSSSC Prelims Full Mock 1', 'osssc-prelims-full-mock-1', 'Full mock for OSSSC Prelims with latest pattern.', 'osssc', 'Prelims', 'full-mock', 120, 200, 100, 'medium', true, 0.25, 876, 'Pre-Exam', 1, true),
 ('12', 'OSSSC Mains Mock 1', 'osssc-mains-mock-1', 'Mains mock test for OSSSC with descriptive answers.', 'osssc', 'Mains', 'full-mock', 180, 300, 120, 'hard', false, null, 543, 'Mains', 1, true),
 ('13', 'OSSSC Odia Language Sectional', 'osssc-odia-sectional', 'Sectional test for Odia language proficiency.', 'osssc', 'Prelims', 'sectional', 20, 40, 20, 'easy', true, null, 1654, 'Pre-Exam', 1, true),

@@ -11,7 +11,6 @@ import { crayon } from '@/lib/crayon';
 
 const categoryColors: Record<string, string> = {
   'Exam Tips': 'bg-brand-50 text-brand-700',
-  'Current Affairs': 'bg-ocean-50 text-ocean-700',
   'Study Material': 'bg-mint-50 text-mint-700',
   'Notifications': 'bg-sunny-50 text-sunny-700',
   'Success Stories': 'bg-accent-50 text-accent-700',
