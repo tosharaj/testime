@@ -1,33 +1,105 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
-import { api } from '@/lib/api';
+import Badge from '@/components/ui/Badge';
+import { getBlogPosts, blogCategories, BlogPost } from '@/lib/blogStore';
 import { formatDate } from '@/lib/utils';
-import { Newspaper, Calendar, ArrowRight, Clock, Bookmark } from 'lucide-react';
+import { Newspaper, Calendar, ArrowRight, Clock, Search, ChevronRight, TrendingUp, Sparkles, BookOpenText } from 'lucide-react';
 
-interface BlogPost {
-  id: string; title: string; slug: string; excerpt?: string;
-  coverImage?: string; tags?: string; publishedAt: string;
+const categoryColors: Record<string, string> = {
+  'Exam Tips': 'bg-brand-50 text-brand-700',
+  'Current Affairs': 'bg-ocean-50 text-ocean-700',
+  'Study Material': 'bg-mint-50 text-mint-700',
+  'Notifications': 'bg-sunny-50 text-sunny-700',
+  'Success Stories': 'bg-accent-50 text-accent-700',
+};
+
+function readingTime(content: string) {
+  const words = content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+function CategoryPill({ category }: { category?: string }) {
+  if (!category) return null;
+  const cls = categoryColors[category] || 'bg-surface-100 text-surface-600';
+  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${cls}`}>{category}</span>;
 }
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [activeCat, setActiveCat] = useState('All');
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
-    api.getBlogPosts().then((res) => setPosts(res.data)).catch(console.error);
+    setPosts(getBlogPosts());
   }, []);
 
+  const filtered = useMemo(() => {
+    return posts.filter(p => {
+      const mCat = activeCat === 'All' || p.category === activeCat;
+      const q = query.toLowerCase().trim();
+      const mSearch = !q || p.title.toLowerCase().includes(q) || p.excerpt?.toLowerCase().includes(q) || p.tags?.toLowerCase().includes(q);
+      return mCat && mSearch;
+    });
+  }, [posts, activeCat, query]);
+
+  const [featured, ...rest] = filtered;
+
   return (
-    <div className="py-16 lg:py-24 animate-fade-in">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6">
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 rounded-2xl border border-brand-200/60 bg-brand-50 px-4 py-1.5 text-sm font-semibold text-brand-700 mb-6">
-            <Newspaper className="h-4 w-4" />
-            Our Blog
+    <div className="bg-white animate-fade-in">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 lg:py-10">
+        <nav className="flex items-center gap-1.5 text-sm text-surface-400 mb-8">
+          <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <span className="text-surface-600 font-medium">Blog</span>
+        </nav>
+
+        {/* Hero */}
+        <div className="relative overflow-hidden rounded-4xl bg-gradient-hero border border-surface-200/60 p-8 lg:p-12 mb-10">
+          <div className="absolute inset-0 bg-dot-grid opacity-40" />
+          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-brand-200/40 blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-accent-200/40 blur-3xl" />
+          <div className="relative max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-surface-200 px-3 py-1 text-xs font-semibold text-brand-600 mb-5 shadow-sm">
+              <Sparkles className="h-3.5 w-3.5" />
+              Insights &amp; Updates
+            </div>
+            <h1 className="font-display text-3xl lg:text-5xl font-bold text-surface-900 mb-4 leading-tight">
+              Exam Tips, News &amp; <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">Study Strategies</span>
+            </h1>
+            <p className="text-surface-500 text-base lg:text-lg leading-relaxed max-w-xl">
+              Expert guidance, notifications, and success stories to power your preparation for every Odisha competitive exam.
+            </p>
           </div>
-          <h1 className="section-heading text-surface-900 mb-4">Exam Tips &amp; Updates</h1>
-          <p className="section-subheading">Stay informed with the latest exam strategies, tips, and platform updates</p>
+        </div>
+
+        {/* Controls */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
+          <div className="flex flex-wrap gap-2">
+            {['All', ...blogCategories].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCat(cat)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  activeCat === cat
+                    ? 'bg-surface-900 text-white shadow-sm'
+                    : 'bg-surface-100 text-surface-600 hover:bg-surface-200'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          <div className="relative w-full lg:w-72">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400 pointer-events-none" />
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search articles..."
+              className="w-full rounded-xl border border-surface-200 bg-surface-50 pl-10 pr-4 py-2.5 text-sm text-surface-700 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-300 transition-all"
+            />
+          </div>
         </div>
 
         {posts.length === 0 ? (
@@ -38,46 +110,101 @@ export default function BlogPage() {
             <p className="text-lg font-semibold text-surface-900 mb-2">No posts yet</p>
             <p className="text-sm text-surface-500">Check back soon for new content.</p>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="h-16 w-16 rounded-2xl bg-surface-100 flex items-center justify-center mx-auto mb-4">
+              <Search className="h-8 w-8 text-surface-300" />
+            </div>
+            <p className="text-lg font-semibold text-surface-900 mb-2">No matching posts</p>
+            <p className="text-sm text-surface-500">Try a different category or search term.</p>
+          </div>
         ) : (
-          <div className="space-y-6">
-            {posts.map((post) => (
-              <Link key={post.id} href={`/blog/${post.slug}`}>
-                <Card className="card-hover group">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-5">
-                      {post.coverImage && (
-                        <div className="hidden sm:block w-24 h-24 rounded-xl overflow-hidden shrink-0">
-                          <img src={post.coverImage} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <>
+            {featured && (
+              <Link href={`/blog/${featured.slug}`} className="group mb-10 block">
+                <Card variant="raised" className="overflow-hidden">
+                  <div className="grid lg:grid-cols-2">
+                    <div className={`relative min-h-[220px] lg:min-h-full overflow-hidden ${featured.coverImage ? '' : 'bg-gradient-brand'}`}>
+                      {featured.coverImage ? (
+                        <img src={featured.coverImage} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-brand flex items-center justify-center">
+                          <Newspaper className="h-16 w-16 text-white/40" />
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
-                        <h2 className="text-lg font-bold text-surface-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">
-                          {post.title}
-                        </h2>
-                        {post.excerpt && (
-                          <p className="text-sm text-surface-500 mb-3 line-clamp-2 leading-relaxed">{post.excerpt}</p>
-                        )}
-                        <div className="flex items-center gap-4 text-xs text-surface-400">
-                          <span className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {post.publishedAt ? formatDate(post.publishedAt) : 'Draft'}
-                          </span>
-                          {post.tags && post.tags.split(',').slice(0, 2).map(t => (
-                            <span key={t} className="bg-surface-100 text-surface-500 px-2.5 py-0.5 rounded-lg font-medium">
-                              {t.trim()}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="hidden sm:flex items-center text-surface-300 group-hover:text-brand-400 transition-colors shrink-0">
-                        <ArrowRight className="h-5 w-5" />
-                      </div>
+                      <span className="absolute top-4 left-4 inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-3 py-1 text-xs font-bold text-brand-700 shadow-sm">
+                        <TrendingUp className="h-3.5 w-3.5" /> Featured
+                      </span>
                     </div>
-                  </CardContent>
+                    <CardContent className="p-6 lg:p-10 flex flex-col justify-center">
+                      <div className="flex items-center gap-2 mb-4">
+                        <CategoryPill category={featured.category} />
+                        <span className="inline-flex items-center gap-1 text-xs text-surface-400">
+                          <Clock className="h-3 w-3" /> {readingTime(featured.content)} min read
+                        </span>
+                      </div>
+                      <h2 className="font-display text-2xl lg:text-3xl font-bold text-surface-900 mb-3 leading-snug group-hover:text-brand-600 transition-colors">
+                        {featured.title}
+                      </h2>
+                      {featured.excerpt && (
+                        <p className="text-surface-500 leading-relaxed mb-5 line-clamp-3">{featured.excerpt}</p>
+                      )}
+                      <div className="flex items-center gap-4">
+                        <span className="inline-flex items-center gap-1.5 text-sm text-surface-400">
+                          <Calendar className="h-4 w-4" />
+                          {featured.publishedAt ? formatDate(featured.publishedAt) : 'Draft'}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 group-hover:gap-2.5 transition-all">
+                          Read Article <ArrowRight className="h-4 w-4" />
+                        </span>
+                      </div>
+                    </CardContent>
+                  </div>
                 </Card>
               </Link>
-            ))}
-          </div>
+            )}
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {rest.map((post, i) => (
+                <Link key={post.id} href={`/blog/${post.slug}`}>
+                  <Card className="card-hover h-full group overflow-hidden">
+                    <div className={`h-40 overflow-hidden ${post.coverImage ? '' : 'bg-gradient-mint'}`}>
+                      {post.coverImage ? (
+                        <img src={post.coverImage} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      ) : (
+                        <div className="h-full w-full bg-gradient-to-br from-brand-100 via-ocean-100 to-accent-100 flex items-center justify-center">
+                          <BookOpenText className={`h-10 w-10 ${i % 2 ? 'text-accent-300' : 'text-brand-300'}`} />
+                        </div>
+                      )}
+                    </div>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <CategoryPill category={post.category} />
+                        <span className="inline-flex items-center gap-1 text-xs text-surface-400 ml-auto">
+                          <Clock className="h-3 w-3" /> {readingTime(post.content)} min
+                        </span>
+                      </div>
+                      <h2 className="font-bold text-surface-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors leading-snug">
+                        {post.title}
+                      </h2>
+                      {post.excerpt && (
+                        <p className="text-sm text-surface-500 mb-4 line-clamp-2 leading-relaxed">{post.excerpt}</p>
+                      )}
+                      <div className="flex items-center justify-between pt-4 border-t border-surface-100">
+                        <span className="inline-flex items-center gap-1.5 text-xs text-surface-400">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {post.publishedAt ? formatDate(post.publishedAt) : 'Draft'}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 group-hover:gap-2 transition-all">
+                          Read <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

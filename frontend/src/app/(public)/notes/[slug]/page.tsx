@@ -5,18 +5,25 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import { api } from '@/lib/api';
-import { Note } from '@/types';
-import { BookOpen, Download, ArrowLeft, Lock, Eye, Calendar, FileText } from 'lucide-react';
+import { getNoteBySlug, incrementNoteViews, getNotes, NoteItem } from '@/lib/notesStore';
+import { BookOpen, Download, ArrowLeft, Lock, Eye, Calendar, FileText, ChevronRight, ArrowRight } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
 export default function NoteDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [note, setNote] = useState<Note | null>(null);
+  const [note, setNote] = useState<NoteItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [related, setRelated] = useState<NoteItem[]>([]);
 
   useEffect(() => {
-    api.getNoteBySlug(slug).then(setNote).catch(console.error).finally(() => setLoading(false));
+    const n = getNoteBySlug(slug);
+    setNote(n || null);
+    if (n) {
+      incrementNoteViews(slug);
+      setNote({ ...n, viewCount: n.viewCount + 1 });
+      setRelated(getNotes({ examId: n.exam.slug }).data.filter(r => r.id !== n.id).slice(0, 3));
+    }
+    setLoading(false);
   }, [slug]);
 
   if (loading) {
@@ -43,14 +50,15 @@ export default function NoteDetailPage() {
   }
 
   return (
-    <div className="py-16 lg:py-24 animate-fade-in">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6">
-        <Link
-          href="/notes"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-surface-400 hover:text-brand-600 mb-8 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Notes
-        </Link>
+    <div className="bg-white animate-fade-in">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 lg:py-10">
+        <nav className="flex items-center gap-1.5 text-sm text-surface-400 mb-6">
+          <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <Link href="/notes" className="hover:text-brand-600 transition-colors">Notes</Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <span className="text-surface-600 font-medium truncate max-w-[240px]">{note.title}</span>
+        </nav>
 
         <div className="flex items-center gap-3 mb-4">
           <Badge variant={note.isPremium ? 'premium' : 'success'} size="md">
@@ -64,12 +72,12 @@ export default function NoteDetailPage() {
           </span>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-bold text-surface-900 mb-4 leading-tight">{note.title}</h1>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold text-surface-900 mb-4 leading-tight">{note.title}</h1>
         {note.summary && <p className="text-lg text-surface-500 mb-8 leading-relaxed">{note.summary}</p>}
 
         <div className="flex flex-wrap gap-2 mb-10">
           {note.exam && (
-            <Link href={`/exams/${note.exam.slug}`}
+            <Link href={`/notes?examId=${note.exam.slug}`}
               className="text-sm font-medium px-4 py-1.5 rounded-xl bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors">
               {note.exam.name}
             </Link>
@@ -104,7 +112,7 @@ export default function NoteDetailPage() {
           </Card>
         )}
 
-        <div className="bg-white rounded-2xl border border-surface-200/60 p-6 sm:p-10 shadow-sm">
+        <div className="bg-white rounded-3xl border border-surface-200/60 p-6 sm:p-10 shadow-sm">
           <div dangerouslySetInnerHTML={{ __html: note.content || '' }} />
         </div>
 
@@ -113,6 +121,29 @@ export default function NoteDetailPage() {
             <Button>
               <Download className="h-4 w-4 mr-2" /> Download PDF
             </Button>
+          </div>
+        )}
+
+        {related.length > 0 && (
+          <div className="mt-16 pt-8 border-t border-surface-100">
+            <h2 className="font-display text-xl font-bold text-surface-900 mb-6">More {note.exam.name} Notes</h2>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {related.map(r => (
+                <Link key={r.id} href={`/notes/${r.slug}`} className="group">
+                  <div className="rounded-2xl border border-surface-200 p-5 hover:shadow-card-hover hover:-translate-y-0.5 transition-all h-full bg-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant={r.isPremium ? 'premium' : 'success'} size="sm">{r.isPremium ? 'Premium' : 'Free'}</Badge>
+                    </div>
+                    <h3 className="font-bold text-surface-900 text-sm leading-snug mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">
+                      {r.title}
+                    </h3>
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 group-hover:gap-1.5 transition-all">
+                      Read <ArrowRight className="h-3 w-3" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
