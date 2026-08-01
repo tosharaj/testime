@@ -91,9 +91,27 @@ export const api = {
           description: menuCat.description,
           icon: '📘',
           color: menuCat.color,
-          family: 'SSC' as const,
+          family: 'Other' as const,
           subjects: [],
+          category: menuCat,
         };
+      }
+      for (const cat of examMenuCategories) {
+        const sub = cat.exams.find(e => e.slug === slug);
+        if (sub) {
+          return {
+            id: sub.slug,
+            name: sub.name,
+            shortName: sub.name,
+            slug: sub.slug,
+            description: sub.description,
+            icon: sub.icon || '📘',
+            color: cat.color,
+            family: 'Other' as const,
+            subjects: [],
+            category: cat,
+          };
+        }
       }
       return undefined;
     }

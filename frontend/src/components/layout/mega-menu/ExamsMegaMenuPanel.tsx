@@ -77,7 +77,7 @@ export default function ExamsMegaMenuPanel({
       role="menu"
       aria-label="Exams mega menu"
       onKeyDown={handleKeyDown}
-      className="flex max-h-[560px] overflow-hidden rounded-3xl border border-surface-100 bg-white shadow-elevated"
+      className="flex max-h-[480px] overflow-hidden rounded-2xl border border-surface-100 bg-white shadow-elevated"
     >
       <ExamCategoryList
         categories={examMenuCategories}
@@ -85,7 +85,7 @@ export default function ExamsMegaMenuPanel({
         onSelect={onCategoryChange}
         registerButton={registerButton}
       />
-      <div className="flex w-[640px] shrink-0 flex-col overflow-hidden">
+      <div className="flex w-[560px] shrink-0 flex-col overflow-hidden">
         <ExamCardGrid key={selected.slug} category={selected} />
       </div>
     </div>
