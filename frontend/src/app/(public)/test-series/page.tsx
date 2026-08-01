@@ -1,10 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Search, Loader2, BrainCircuit } from 'lucide-react';
+import { Search, Loader2, BrainCircuit, Trophy } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import TestSeriesCard from '@/components/test-series/TestSeriesCard';
 import { api } from '@/lib/api';
 import { examCategories } from '@/lib/examCategories';
+import CrayonStick from '@/components/ui/CrayonStick';
+import { crayon } from '@/lib/crayon';
 
 const previewMap: Record<string, string[]> = {
   ossc: ['Full Mock Tests (OSSC CGL, CHSL)', 'Sectional Tests (Arithmetic, Reasoning)', 'Topic-wise Tests (Current Affairs)', 'PYQ Tests (2021–2024)'],
@@ -61,11 +63,32 @@ export default function TestSeriesPage() {
   return (
     <div className="bg-surface-50/30 animate-fade-in min-h-screen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 lg:py-12">
-        <div className="max-w-2xl mb-8">
-          <h1 className="text-3xl lg:text-4xl font-bold text-surface-900 mb-3">Test Series</h1>
-          <p className="text-surface-500 leading-relaxed">
-            Choose your examination and start practicing with realistic mock tests, sectional quizzes, and topic-wise assessments designed for Odisha exams.
-          </p>
+        <div className="relative mb-10 overflow-hidden rounded-4xl bg-[#FFFBFA] border-2 border-surface-200/70 p-8 lg:p-10">
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{ backgroundImage: 'radial-gradient(circle, rgba(53,179,126,0.12) 0.6px, transparent 0.6px)', backgroundSize: '22px 22px' }}
+          />
+          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-mint-200/40 blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-lavender-200/40 blur-3xl" />
+          <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 items-end gap-2 lg:flex xl:right-12">
+            <CrayonStick c={crayon(3)} height={84} tilt={-8} delay={0} />
+            <CrayonStick c={crayon(4)} height={104} tilt={6} delay={0.4} />
+            <CrayonStick c={crayon(2)} height={80} tilt={-4} delay={0.8} />
+            <CrayonStick c={crayon(5)} height={112} tilt={9} delay={1.2} />
+            <CrayonStick c={crayon(0)} height={68} tilt={-10} delay={0.6} />
+          </div>
+          <div className="relative max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-surface-200 bg-white/80 px-3 py-1 text-xs font-bold text-mint-700 mb-4 shadow-sm">
+              <Trophy className="h-3.5 w-3.5" />
+              Practice &amp; Rank
+            </div>
+            <h1 className="font-display text-3xl lg:text-5xl font-bold text-surface-900 mb-3 leading-tight">
+              Test <span className="bg-gradient-to-r from-mint-500 via-brand-500 to-lavender-500 bg-clip-text text-transparent">Series</span>
+            </h1>
+            <p className="text-surface-500 text-base lg:text-lg leading-relaxed">
+              Choose your examination and start practicing with realistic mock tests, sectional quizzes, and topic-wise assessments designed for Odisha exams.
+            </p>
+          </div>
         </div>
 
         <div className="max-w-md mb-10">

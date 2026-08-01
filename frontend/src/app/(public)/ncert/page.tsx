@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { BookOpen, ArrowRight, ChevronRight, GraduationCap, Library, BookText, BarChart3 } from 'lucide-react';
+import CrayonStick from '@/components/ui/CrayonStick';
+import { crayon } from '@/lib/crayon';
 
 const classes = [
   { id: 6, name: 'Class 6', slug: 'class-6', subjects: ['History', 'Geography', 'Civics', 'Science', 'Mathematics'], bookCount: 5 },
@@ -42,28 +44,45 @@ export default function NcertPage() {
           <span className="text-surface-600 font-medium">NCERT</span>
         </nav>
 
-        <div className="mb-10">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-mint-50 border border-mint-200 px-3 py-1 text-xs font-medium text-mint-700 mb-3">
-            <BookOpen className="h-3.5 w-3.5" />
-            Content Foundation
+        <div className="relative mb-10 overflow-hidden rounded-4xl bg-[#FFFBFA] border-2 border-surface-200/70 p-8 lg:p-10">
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{ backgroundImage: 'radial-gradient(circle, rgba(76,139,235,0.12) 0.6px, transparent 0.6px)', backgroundSize: '22px 22px' }}
+          />
+          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-mint-200/40 blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-ocean-200/40 blur-3xl" />
+          <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 items-end gap-2 lg:flex xl:right-12">
+            <CrayonStick c={crayon(3)} height={84} tilt={-8} delay={0} />
+            <CrayonStick c={crayon(1)} height={104} tilt={6} delay={0.4} />
+            <CrayonStick c={crayon(2)} height={76} tilt={-4} delay={0.8} />
+            <CrayonStick c={crayon(5)} height={112} tilt={9} delay={1.2} />
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-surface-900 mb-3">NCERT Based Learning</h1>
-          <p className="text-surface-500 text-lg max-w-2xl leading-relaxed">
-            NCERT textbooks form the foundation for all competitive exams. Each chapter is linked to notes, MCQs, tests, and previous year questions for integrated learning.
-          </p>
+          <div className="relative max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-surface-200 bg-white/80 px-3 py-1 text-xs font-bold text-mint-700 mb-4 shadow-sm">
+              <BookOpen className="h-3.5 w-3.5" />
+              Content Foundation
+            </div>
+            <h1 className="font-display text-3xl lg:text-5xl font-bold text-surface-900 mb-3 leading-tight">
+              NCERT Based <span className="bg-gradient-to-r from-mint-500 via-ocean-500 to-brand-500 bg-clip-text text-transparent">Learning</span>
+            </h1>
+            <p className="text-surface-500 text-base lg:text-lg max-w-2xl leading-relaxed">
+              NCERT textbooks form the foundation for all competitive exams. Each chapter is linked to notes, MCQs, tests, and previous year questions for integrated learning.
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-          {stats.map(s => {
+          {stats.map((s, i) => {
+            const c = crayon(i);
             const Icon = s.icon;
             return (
-              <Card key={s.label}>
+              <Card key={s.label} color={c.name}>
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-brand-50 flex items-center justify-center">
-                    <Icon className="h-5 w-5 text-brand-600" />
+                  <div className={`h-10 w-10 rounded-xl ${c.body} flex items-center justify-center text-white shadow-sm`}>
+                    <Icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-xl font-bold text-surface-900">{s.value}</p>
+                    <p className="font-display text-xl font-bold text-surface-900">{s.value}</p>
                     <p className="text-xs text-surface-500">{s.label}</p>
                   </div>
                 </CardContent>

@@ -15,10 +15,11 @@ export default function LoginPage() {
   const [method, setMethod] = useState<AuthMethod>('email');
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-[#FFFBFA] px-4 py-12">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-brand-100/30 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-accent-100/20 blur-3xl" />
+        <div className="absolute top-1/3 -left-20 w-72 h-72 rounded-full bg-sunny-100/30 blur-3xl" />
       </div>
 
       <Card className="w-full max-w-md relative animate-fade-in-up shadow-xl shadow-brand-500/5">

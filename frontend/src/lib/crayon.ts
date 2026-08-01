@@ -1,5 +1,7 @@
+export type CrayonName = 'coral' | 'ocean' | 'sunny' | 'mint' | 'lavender' | 'brand';
+
 export type Crayon = {
-  name: string;
+  name: CrayonName;
   body: string;
   tip: string;
   tipBorder: string;

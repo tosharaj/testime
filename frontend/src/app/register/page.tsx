@@ -75,7 +75,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-[#FFFBFA] px-4 py-12">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-brand-100/30 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-accent-100/20 blur-3xl" />

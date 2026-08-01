@@ -43,7 +43,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   };
 
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div className="min-h-screen bg-[#FFFBFA]">
       <header className="sticky top-0 z-30 h-16 border-b border-surface-200/60 bg-white/80 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <button

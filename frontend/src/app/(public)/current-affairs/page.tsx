@@ -1,17 +1,28 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { ChevronRight, Newspaper, Calendar, Clock, Bookmark, Share2, ArrowRight } from 'lucide-react';
+import { ChevronRight, Newspaper, Calendar, Clock, Bookmark, Share2, ArrowRight, Sparkles } from 'lucide-react';
+import CrayonStick from '@/components/ui/CrayonStick';
+import { crayon, type Crayon } from '@/lib/crayon';
 
 const categories = ['All', 'National', 'International', 'Odisha', 'Economy', 'Science & Tech', 'Environment'];
 
+const categoryColor: Record<string, Crayon> = {
+  National: crayon(5),
+  International: crayon(1),
+  Odisha: crayon(0),
+  Economy: crayon(3),
+  'Science & Tech': crayon(4),
+  Environment: crayon(2),
+};
+
 const categoryIconMap: Record<string, { src: string; icon: string; bg: string }> = {
-  National: { src: '/images/national.png', icon: '🇮🇳', bg: 'bg-blue-50' },
-  International: { src: '/images/international.png', icon: '🌍', bg: 'bg-teal-50' },
-  Odisha: { src: '/images/odisha_govt.png', icon: '🏛️', bg: 'bg-orange-50' },
-  Economy: { src: '/images/economy.png', icon: '📈', bg: 'bg-emerald-50' },
-  'Science & Tech': { src: '/images/science_tech.png', icon: '🚀', bg: 'bg-violet-50' },
-  Environment: { src: '/images/environment.png', icon: '🌱', bg: 'bg-green-50' },
+  National: { src: '/images/national.png', icon: '🇮🇳', bg: 'bg-brand-50' },
+  International: { src: '/images/international.png', icon: '🌍', bg: 'bg-ocean-50' },
+  Odisha: { src: '/images/odisha_govt.png', icon: '🏛️', bg: 'bg-coral-50' },
+  Economy: { src: '/images/economy.png', icon: '📈', bg: 'bg-mint-50' },
+  'Science & Tech': { src: '/images/science_tech.png', icon: '🚀', bg: 'bg-lavender-50' },
+  Environment: { src: '/images/environment.png', icon: '🌱', bg: 'bg-sunny-50' },
 };
 
 const articles = [
@@ -82,98 +93,123 @@ export default function CurrentAffairsPage() {
     : articles.filter(a => a.category === activeCategory);
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen animate-fade-in">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-8">
-          <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+        <nav className="flex items-center gap-1.5 text-sm text-surface-400 mb-8">
+          <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
           <ChevronRight className="h-3.5 w-3.5" />
-          <span className="text-gray-700 font-medium">Daily Current Affairs</span>
+          <span className="text-surface-600 font-medium">Daily Current Affairs</span>
         </nav>
+
+        {/* Crayon hero */}
+        <div className="relative mb-10 overflow-hidden rounded-4xl bg-[#FFFBFA] border-2 border-surface-200/70 p-8 lg:p-10">
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{ backgroundImage: 'radial-gradient(circle, rgba(239,97,80,0.12) 0.6px, transparent 0.6px)', backgroundSize: '22px 22px' }}
+          />
+          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-sunny-200/40 blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-lavender-200/40 blur-3xl" />
+          <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 items-end gap-2 lg:flex xl:right-12">
+            <CrayonStick c={crayon(5)} height={72} tilt={-8} delay={0} />
+            <CrayonStick c={crayon(0)} height={96} tilt={6} delay={0.4} />
+            <CrayonStick c={crayon(3)} height={80} tilt={-4} delay={0.8} />
+            <CrayonStick c={crayon(2)} height={108} tilt={9} delay={1.2} />
+          </div>
+          <div className="relative max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-surface-200 bg-white/80 px-3 py-1 text-xs font-bold text-brand-600 mb-4 shadow-sm">
+              <Sparkles className="h-3.5 w-3.5" />
+              Stay Updated
+            </div>
+            <h1 className="font-display text-3xl lg:text-5xl font-bold text-surface-900 mb-3 leading-tight">
+              Daily Current <span className="bg-gradient-to-r from-coral-500 via-sunny-500 to-mint-500 bg-clip-text text-transparent">Affairs</span>
+            </h1>
+            <p className="text-surface-500 text-base lg:text-lg leading-relaxed max-w-2xl">
+              Stay ahead with daily curated current affairs from national, international, and Odisha-specific news relevant for competitive exams.
+            </p>
+          </div>
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-12">
           <div className="w-full lg:w-[68%] min-w-0">
-            <div className="mb-10">
-              <span className="inline-block text-xs font-semibold text-blue-600 uppercase tracking-wider mb-2">Stay Updated</span>
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
-                Daily Current Affairs
-              </h1>
-              <p className="text-gray-500 leading-relaxed max-w-2xl text-base">
-                Stay ahead with daily curated current affairs from national, international, and Odisha-specific news relevant for competitive exams.
-              </p>
-            </div>
-
             <div className="flex flex-wrap gap-2 mb-8">
-              {categories.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    activeCategory === cat
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+              {categories.map(cat => {
+                const c = cat === 'All' ? crayon(5) : categoryColor[cat];
+                const isActive = activeCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`rounded-full border-2 px-4 py-1.5 text-sm font-semibold transition-all ${
+                      isActive ? `${c.body} border-transparent text-white shadow-md` : 'border-surface-200 bg-white text-surface-600 hover:border-surface-300 hover:text-surface-800'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
             </div>
 
             <div className="space-y-4 mb-10">
-              {filtered.map((article) => (
-                <article key={article.id} className="border border-gray-200 rounded-lg bg-white p-5 sm:p-6 transition-all hover:border-gray-300 hover:shadow-sm">
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <span className="inline-block rounded px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700">
-                      {article.category}
-                    </span>
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> {article.date}
-                    </span>
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> {article.readTime}
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-3 mb-2">
-                    <CategoryIcon category={article.category} />
-                    <h2 className="text-lg font-semibold text-gray-900 mb-2 leading-snug">{article.title}</h2>
-                  </div>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-4">{article.excerpt}</p>
-                  <div className="flex items-center gap-2.5">
-                    <Link href={`/current-affairs/${article.slug}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
-                      Read Full Article
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                    <div className="ml-auto flex items-center gap-1">
-                      <button className="p-1.5 text-gray-400 hover:text-blue-600 rounded-md hover:bg-gray-100 transition-all">
-                        <Bookmark className="h-4 w-4" />
-                      </button>
-                      <button className="p-1.5 text-gray-400 hover:text-blue-600 rounded-md hover:bg-gray-100 transition-all">
-                        <Share2 className="h-4 w-4" />
-                      </button>
+              {filtered.map((article) => {
+                const c = categoryColor[article.category] || crayon(5);
+                return (
+                  <article key={article.id} className={`relative overflow-hidden rounded-2xl border-2 ${c.border} bg-white p-5 sm:p-6 transition-all hover:-translate-y-0.5 hover:shadow-lg ${c.hoverBorder} ${c.hoverShadow}`}>
+                    <div className={`absolute inset-x-0 top-0 h-2 ${c.body}`} />
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${c.chip} ${c.chipText}`}>
+                        {article.category}
+                      </span>
+                      <span className="text-xs text-surface-400 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" /> {article.date}
+                      </span>
+                      <span className="text-xs text-surface-400 flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> {article.readTime}
+                      </span>
                     </div>
-                  </div>
-                </article>
-              ))}
+                    <div className="flex items-start gap-3 mb-2">
+                      <CategoryIcon category={article.category} />
+                      <h2 className={`font-display text-lg font-bold text-surface-900 mb-2 leading-snug ${c.hoverText}`}>{article.title}</h2>
+                    </div>
+                    <p className="text-sm text-surface-500 leading-relaxed mb-4">{article.excerpt}</p>
+                    <div className="flex items-center gap-2.5">
+                      <Link href={`/current-affairs/${article.slug}`} className={`inline-flex items-center gap-1.5 text-sm font-bold ${c.text} hover:underline transition-colors`}>
+                        Read Full Article
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                      <div className="ml-auto flex items-center gap-1">
+                        <button className={`p-1.5 text-surface-400 hover:text-brand-600 rounded-lg hover:bg-surface-100 transition-all`}>
+                          <Bookmark className="h-4 w-4" />
+                        </button>
+                        <button className={`p-1.5 text-surface-400 hover:text-brand-600 rounded-lg hover:bg-surface-100 transition-all`}>
+                          <Share2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
 
           <aside className="w-full lg:w-[32%]">
             <div className="lg:sticky lg:top-24 space-y-6">
-              <div className="border border-gray-200 rounded-lg bg-white p-6">
-                <h3 className="text-base font-semibold text-gray-900 mb-1">Daily Quiz</h3>
-                <p className="text-sm text-gray-500 mb-4">Test your knowledge with current affairs based MCQs.</p>
-                <button className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+              <div className="rounded-2xl border-2 border-surface-200 bg-white p-6 shadow-card">
+                <h3 className="font-display text-base font-bold text-surface-900 mb-1">Daily Quiz</h3>
+                <p className="text-sm text-surface-500 mb-4">Test your knowledge with current affairs based MCQs.</p>
+                <button className="w-full rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 transition-colors flex items-center justify-center gap-2 shadow-md shadow-brand-500/25">
                   Start Quiz <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
-              <div className="border border-gray-200 rounded-lg bg-white p-6">
-                <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Newspaper className="h-4 w-4 text-blue-600" />
+              <div className="relative overflow-hidden rounded-2xl border-2 border-surface-200 bg-white p-6 shadow-card">
+                <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-coral-500 via-sunny-500 to-mint-500" />
+                <h3 className="font-display text-base font-bold text-surface-900 mb-4 flex items-center gap-2">
+                  <Newspaper className="h-4 w-4 text-brand-600" />
                   Monthly Compilations
                 </h3>
                 <ul className="space-y-1">
                   {['July 2026', 'June 2026', 'May 2026', 'April 2026'].map((month) => (
                     <li key={month}>
-                      <button className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all">
+                      <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-surface-600 hover:text-brand-600 hover:bg-surface-50 transition-all">
                         {month} Monthly Digest
                       </button>
                     </li>

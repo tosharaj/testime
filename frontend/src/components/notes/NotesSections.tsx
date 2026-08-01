@@ -5,7 +5,7 @@ import type { HomepageSection, Resource } from '@/types/notes';
 import { getContinueStudying, getSectionResources } from '@/lib/notesStore';
 import ResourceCard from '@/components/notes/ResourceCard';
 import Badge from '@/components/ui/Badge';
-import { crayon, type Crayon } from '@/components/notes/crayon';
+import { crayon, type Crayon } from '@/lib/crayon';
 
 export function SectionHeading({
   number,

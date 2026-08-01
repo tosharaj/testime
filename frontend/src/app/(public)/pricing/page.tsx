@@ -47,12 +47,13 @@ export default function PricingPage() {
     <div className="py-16 lg:py-24 animate-fade-in bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 rounded-2xl border border-sunny-200/60 bg-sunny-50 px-4 py-1.5 text-sm font-semibold text-sunny-700 mb-6">
-            <Sparkles className="h-4 w-4" />
+          <div className="inline-flex items-center gap-2 rounded-full border-2 border-surface-200 bg-white px-4 py-1.5 text-sm font-bold text-sunny-700 mb-6 shadow-sm">
+            <Sparkles className="h-4 w-4 text-sunny-500" />
             Unlock Premium Features
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-surface-900 mb-4 tracking-tight">
-            Choose Your Plan
+            Choose Your{' '}
+            <span className="bg-gradient-to-r from-coral-500 via-sunny-500 to-mint-500 bg-clip-text text-transparent">Plan</span>
           </h1>
           <p className="text-surface-500 text-lg max-w-xl mx-auto">
             Unlock full access to test series, premium notes, and advanced analytics for all Odisha exams.
@@ -63,6 +64,7 @@ export default function PricingPage() {
           {plans.map((plan) => (
             <Card
               key={plan.id}
+              color={plan.price === 0 ? 'ocean' : 'brand'}
               className="relative"
             >
               <CardContent className="p-7">

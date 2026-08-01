@@ -23,14 +23,13 @@ const sizeStyles = {
   md: 'h-10 px-5 text-sm gap-2 rounded-xl',
   lg: 'h-12 px-7 text-base gap-2 rounded-2xl',
 };
-
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', children, ...props }, ref) => {
     return (
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center font-medium transition-all duration-200',
+          'inline-flex items-center justify-center font-semibold transition-all duration-200',
           'focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:ring-offset-2',
           'disabled:opacity-50 disabled:pointer-events-none',
           variantStyles[variant],

@@ -7,7 +7,7 @@
     @apply border-surface-200;
   }
   body {
-    @apply bg-[#FBFBFE] text-surface-700 antialiased;
+    @apply bg-[#FFFBFA] text-surface-700 antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight text-surface-900;
@@ -19,7 +19,7 @@
 
 @layer components {
   .section-heading {
-    @apply text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1];
+    @apply font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1];
   }
   .section-subheading {
     @apply text-lg text-surface-500 max-w-2xl mx-auto leading-relaxed;
@@ -29,6 +29,9 @@
   }
   .gradient-text-accent {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-400 to-sunny-500;
+  }
+  .gradient-primary {
+    @apply bg-gradient-brand;
   }
   .glass {
     @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-card-glass;

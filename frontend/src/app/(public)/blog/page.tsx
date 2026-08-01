@@ -6,6 +6,8 @@ import Badge from '@/components/ui/Badge';
 import { getBlogPosts, blogCategories, BlogPost } from '@/lib/blogStore';
 import { formatDate } from '@/lib/utils';
 import { Newspaper, Calendar, ArrowRight, Clock, Search, ChevronRight, TrendingUp, Sparkles, BookOpenText } from 'lucide-react';
+import CrayonStick from '@/components/ui/CrayonStick';
+import { crayon } from '@/lib/crayon';
 
 const categoryColors: Record<string, string> = {
   'Exam Tips': 'bg-brand-50 text-brand-700',
@@ -56,17 +58,26 @@ export default function BlogPage() {
         </nav>
 
         {/* Hero */}
-        <div className="relative overflow-hidden rounded-4xl bg-gradient-hero border border-surface-200/60 p-8 lg:p-12 mb-10">
-          <div className="absolute inset-0 bg-dot-grid opacity-40" />
-          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-brand-200/40 blur-3xl" />
-          <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-accent-200/40 blur-3xl" />
+        <div className="relative overflow-hidden rounded-4xl bg-[#FFFBFA] border-2 border-surface-200/70 p-8 lg:p-12 mb-10">
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{ backgroundImage: 'radial-gradient(circle, rgba(239,97,80,0.12) 0.6px, transparent 0.6px)', backgroundSize: '22px 22px' }}
+          />
+          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-coral-200/40 blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-lavender-200/40 blur-3xl" />
+          <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 items-end gap-2 lg:flex xl:right-12">
+            <CrayonStick c={crayon(5)} height={80} tilt={-8} delay={0} />
+            <CrayonStick c={crayon(2)} height={100} tilt={6} delay={0.4} />
+            <CrayonStick c={crayon(4)} height={88} tilt={-4} delay={0.8} />
+            <CrayonStick c={crayon(3)} height={112} tilt={9} delay={1.2} />
+          </div>
           <div className="relative max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-surface-200 px-3 py-1 text-xs font-semibold text-brand-600 mb-5 shadow-sm">
+            <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-surface-200 bg-white/80 px-3 py-1 text-xs font-bold text-brand-600 mb-5 shadow-sm">
               <Sparkles className="h-3.5 w-3.5" />
               Insights &amp; Updates
             </div>
             <h1 className="font-display text-3xl lg:text-5xl font-bold text-surface-900 mb-4 leading-tight">
-              Exam Tips, News &amp; <span className="bg-gradient-to-r from-brand-500 to-accent-500 bg-clip-text text-transparent">Study Strategies</span>
+              Exam Tips, News &amp; <span className="bg-gradient-to-r from-coral-500 via-sunny-500 to-mint-500 bg-clip-text text-transparent">Study Strategies</span>
             </h1>
             <p className="text-surface-500 text-base lg:text-lg leading-relaxed max-w-xl">
               Expert guidance, notifications, and success stories to power your preparation for every Odisha competitive exam.
@@ -81,10 +92,10 @@ export default function BlogPage() {
               <button
                 key={cat}
                 onClick={() => setActiveCat(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-full border-2 text-sm font-semibold transition-all ${
                   activeCat === cat
-                    ? 'bg-surface-900 text-white shadow-sm'
-                    : 'bg-surface-100 text-surface-600 hover:bg-surface-200'
+                    ? 'bg-brand-500 border-transparent text-white shadow-md'
+                    : 'border-surface-200 bg-white text-surface-600 hover:border-surface-300 hover:text-surface-800'
                 }`}
               >
                 {cat}
@@ -97,7 +108,7 @@ export default function BlogPage() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search articles..."
-              className="w-full rounded-xl border border-surface-200 bg-surface-50 pl-10 pr-4 py-2.5 text-sm text-surface-700 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-300 transition-all"
+              className="w-full rounded-xl border-2 border-surface-200 bg-white pl-10 pr-4 py-2.5 text-sm text-surface-700 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-300 transition-all"
             />
           </div>
         </div>
