@@ -1,229 +1,235 @@
 'use client';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import {
+  Search, Layers, GraduationCap, BookOpen, Landmark, Users, School,
+  ChevronRight, Sparkles, ArrowRight, FilePlus2, HelpCircle, Library,
+  BookMarked, FileText,
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import { getNotes, getAllNotes, NoteItem } from '@/lib/notesStore';
-import { BookOpen, Eye, Lock, ArrowRight, Search, FileText, ChevronRight, Layers, GraduationCap } from 'lucide-react';
+import { ContinueStudying, SectionRow } from '@/components/notes/NotesSections';
+import { getLibrary } from '@/lib/notesStore';
 
-function NotesContent() {
-  const searchParams = useSearchParams();
-  const [notes, setNotes] = useState<NoteItem[]>([]);
+const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  Landmark, Users, School, FileText, BookOpen,
+};
+
+function NotesHomeContent() {
+  const router = useRouter();
+  const data = getLibrary();
+  const [tab, setTab] = useState<'exam' | 'academic'>('exam');
   const [query, setQuery] = useState('');
-  const [examSlug, setExamSlug] = useState('all');
-  const [subjectSlug, setSubjectSlug] = useState('all');
-  const [view, setView] = useState<'grid' | 'list'>('grid');
 
-  const all = useMemo(() => getAllNotes(), []);
+  const activeHomepageSections = useMemo(
+    () => data.homepageSections.filter(s => s.isActive).sort((a, b) => a.sortOrder - b.sortOrder),
+    [data],
+  );
 
-  const exams = useMemo(() => {
-    const map = new Map<string, string>();
-    all.forEach(n => map.set(n.exam.slug, n.exam.name));
-    return Array.from(map.entries()).map(([slug, name]) => ({ slug, name }));
-  }, [all]);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push(`/notes/search?q=${encodeURIComponent(query.trim())}`);
+  };
 
-  const subjects = useMemo(() => {
-    const map = new Map<string, string>();
-    all.forEach(n => map.set(n.subject.slug, n.subject.name));
-    return Array.from(map.entries()).map(([slug, name]) => ({ slug, name }));
-  }, [all]);
-
-  useEffect(() => {
-    const examId = searchParams.get('examId');
-    if (examId) setExamSlug(examId);
-  }, [searchParams]);
-
-  useEffect(() => {
-    setNotes(getNotes({ examId: examSlug !== 'all' ? examSlug : undefined, subjectId: subjectSlug !== 'all' ? subjectSlug : undefined, search: query || undefined }).data);
-  }, [examSlug, subjectSlug, query]);
-
-  const counts = useMemo(() => ({
-    free: all.filter(n => !n.isPremium).length,
-    premium: all.filter(n => n.isPremium).length,
-  }), [all]);
-
-  const subjectCounts = useMemo(() => {
-    const map: Record<string, number> = {};
-    all.forEach(n => { map[n.subject.slug] = (map[n.subject.slug] || 0) + 1; });
-    return map;
-  }, [all]);
+  const stats = useMemo(() => {
+    const published = data.resources.filter(r => r.isPublished && r.status === 'published');
+    return {
+      total: published.length,
+      free: published.filter(r => r.accessType === 'free').length,
+      exams: data.exams.filter(e => e.isActive).length,
+      topics: data.topics.length,
+    };
+  }, [data]);
 
   return (
     <div className="bg-white animate-fade-in">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 lg:py-10">
-        <nav className="flex items-center gap-1.5 text-sm text-surface-400 mb-8">
+        <nav className="mb-8 flex items-center gap-1.5 text-sm text-surface-400">
           <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
           <ChevronRight className="h-3.5 w-3.5" />
-          <span className="text-surface-600 font-medium">Notes</span>
+          <span className="font-medium text-surface-600">Notes &amp; PDFs</span>
         </nav>
 
         {/* Hero */}
-        <div className="relative overflow-hidden rounded-4xl bg-gradient-hero border border-surface-200/60 p-8 lg:p-12 mb-8">
+        <div className="relative mb-10 overflow-hidden rounded-4xl bg-gradient-hero border border-surface-200/60 p-8 lg:p-12">
           <div className="absolute inset-0 bg-dot-grid opacity-40" />
           <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-mint-200/40 blur-3xl" />
           <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-lavender-200/40 blur-3xl" />
           <div className="relative max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-surface-200 px-3 py-1 text-xs font-semibold text-mint-600 mb-5 shadow-sm">
+            <div className="mb-5 inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-surface-200 px-3 py-1 text-xs font-semibold text-brand-600 shadow-sm">
               <Layers className="h-3.5 w-3.5" />
-              Exam-Focused Study Notes
+              Notes &amp; PDF Resource Library
             </div>
-            <h1 className="font-display text-3xl lg:text-5xl font-bold text-surface-900 mb-4 leading-tight">
-              Study Notes, <span className="bg-gradient-to-r from-mint-500 to-brand-500 bg-clip-text text-transparent">Organised &amp; Exam-Ready</span>
+            <h1 className="font-display text-3xl lg:text-5xl font-bold text-surface-900 mb-4 leading-tight text-balance">
+              Every note you need, <span className="bg-gradient-to-r from-brand-500 to-mint-500 bg-clip-text text-transparent">one search away</span>
             </h1>
             <p className="text-surface-500 text-base lg:text-lg leading-relaxed max-w-xl">
-              Topic-wise notes for every Odisha exam — search by exam, filter by subject, and read instantly.
+              Search thousands of exam notes, books, PYQs and study PDFs — or academic material for your degree.
             </p>
           </div>
-          <div className="relative mt-6 flex flex-wrap gap-3">
-            <div className="rounded-2xl bg-white/80 backdrop-blur border border-surface-200 px-4 py-2.5 flex items-center gap-2 shadow-sm">
-              <span className="text-2xl font-bold text-surface-900">{all.length}</span>
-              <span className="text-sm text-surface-500">Notes</span>
-            </div>
-            <div className="rounded-2xl bg-white/80 backdrop-blur border border-surface-200 px-4 py-2.5 flex items-center gap-2 shadow-sm">
-              <span className="text-2xl font-bold text-mint-600">{counts.free}</span>
-              <span className="text-sm text-surface-500">Free</span>
-            </div>
-            <div className="rounded-2xl bg-white/80 backdrop-blur border border-surface-200 px-4 py-2.5 flex items-center gap-2 shadow-sm">
-              <span className="text-2xl font-bold text-accent-600">{counts.premium}</span>
-              <span className="text-sm text-surface-500">Premium</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400 pointer-events-none" />
+          <form onSubmit={handleSearch} className="relative mt-6 max-w-xl">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-surface-400 pointer-events-none" />
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search notes by title or topic..."
-              className="w-full rounded-xl border border-surface-200 bg-surface-50 pl-10 pr-4 py-2.5 text-sm text-surface-700 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-300 transition-all"
+              placeholder="Search notes, PYQs, books by title or topic..."
+              className="w-full rounded-2xl border border-surface-200 bg-white pl-12 pr-32 py-4 text-base text-surface-700 shadow-lg shadow-brand-500/5 placeholder:text-surface-400 focus:outline-none focus:ring-4 focus:ring-brand-500/20 focus:border-brand-300 transition-all"
             />
-          </div>
-          <select
-            value={examSlug}
-            onChange={e => { setExamSlug(e.target.value); setSubjectSlug('all'); }}
-            className="rounded-xl border border-surface-200 bg-white px-3.5 py-2.5 text-sm text-surface-700 focus:outline-none focus:ring-2 focus:ring-brand-500/30 transition-all"
-          >
-            <option value="all">All Exams</option>
-            {exams.map(e => <option key={e.slug} value={e.slug}>{e.name}</option>)}
-          </select>
-          <div className="flex items-center gap-1 p-1 bg-surface-100 rounded-xl w-fit">
-            <button onClick={() => setView('grid')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'grid' ? 'bg-white text-surface-900 shadow-sm' : 'text-surface-500 hover:text-surface-700'}`}>
-              Grid
+            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition-all hover:bg-brand-600">
+              Search
             </button>
-            <button onClick={() => setView('list')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'list' ? 'bg-white text-surface-900 shadow-sm' : 'text-surface-500 hover:text-surface-700'}`}>
-              List
-            </button>
+          </form>
+          <div className="relative mt-8 flex flex-wrap gap-3">
+            <StatChip value={stats.total} label="Resources" />
+            <StatChip value={stats.free} label="Free" tone="mint" />
+            <StatChip value={stats.exams} label="Exams" tone="ocean" />
+            <StatChip value={stats.topics} label="Topics" tone="lavender" />
           </div>
         </div>
 
-        {/* Subject chips */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          <button
-            onClick={() => setSubjectSlug('all')}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${subjectSlug === 'all' ? 'bg-surface-900 text-white shadow-sm' : 'bg-surface-100 text-surface-600 hover:bg-surface-200'}`}
-          >
-            All Subjects
-          </button>
-          {subjects.map(s => (
+        {/* Quick tabs */}
+        <div className="mb-10">
+          <div className="mb-4 grid grid-cols-2 gap-3 sm:max-w-md">
             <button
-              key={s.slug}
-              onClick={() => setSubjectSlug(s.slug)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${subjectSlug === s.slug ? 'bg-brand-600 text-white shadow-sm' : 'bg-surface-100 text-surface-600 hover:bg-surface-200'}`}
+              onClick={() => setTab('exam')}
+              className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${tab === 'exam' ? 'border-brand-300 bg-brand-50 text-brand-700 shadow-sm' : 'border-surface-200 bg-white text-surface-500 hover:border-surface-300'}`}
             >
-              {s.name} <span className="opacity-60 ml-1">{subjectCounts[s.slug]}</span>
+              <GraduationCap className="h-4 w-4" /> Exam Resources
             </button>
-          ))}
+            <button
+              onClick={() => setTab('academic')}
+              className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${tab === 'academic' ? 'border-lavender-300 bg-lavender-50 text-lavender-700 shadow-sm' : 'border-surface-200 bg-white text-surface-500 hover:border-surface-300'}`}
+            >
+              <School className="h-4 w-4" /> Academic Resources
+            </button>
+          </div>
+
+          {tab === 'exam' ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {data.examCategories.filter(c => c.isActive).map(cat => {
+                const Icon = categoryIcons[cat.icon || 'FileText'] || BookOpen;
+                const exams = data.exams.filter(e => e.categoryId === cat.id && e.isActive);
+                return (
+                  <Link key={cat.id} href={`/notes/category/${cat.slug}`} className="group">
+                    <Card className="h-full card-hover overflow-hidden">
+                      <CardContent className="p-5">
+                        <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-brand text-white shadow-md shadow-brand-500/20">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <h3 className="font-display font-bold text-surface-900 group-hover:text-brand-600 transition-colors">{cat.name}</h3>
+                        <p className="mt-1 line-clamp-2 text-sm text-surface-500">{cat.description}</p>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {exams.slice(0, 3).map(e => (
+                            <span key={e.id} className="rounded-lg bg-surface-100 px-2 py-0.5 text-[11px] font-medium text-surface-600">{e.shortName || e.name}</span>
+                          ))}
+                          {exams.length > 3 && <span className="rounded-lg bg-surface-100 px-2 py-0.5 text-[11px] font-medium text-surface-400">+{exams.length - 3}</span>}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {data.institutions.filter(i => i.isActive).map(inst => {
+                const courses = data.courses.filter(c => c.institutionId === inst.id);
+                return (
+                  <Link key={inst.id} href={`/notes/academic/${inst.slug}`} className="group">
+                    <Card className="h-full card-hover overflow-hidden">
+                      <CardContent className="p-5">
+                        <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-mint text-white shadow-md shadow-mint-500/20">
+                          <School className="h-5 w-5" />
+                        </div>
+                        <h3 className="font-display font-bold text-surface-900 group-hover:text-mint-600 transition-colors">{inst.name}</h3>
+                        <p className="mt-1 line-clamp-2 text-sm text-surface-500">{inst.description}</p>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {courses.slice(0, 3).map(c => (
+                            <span key={c.id} className="rounded-lg bg-lavender-50 px-2 py-0.5 text-[11px] font-medium text-lavender-700">{c.name}</span>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {notes.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="h-16 w-16 rounded-2xl bg-surface-100 flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="h-8 w-8 text-surface-300" />
+        {/* Continue studying */}
+        <ContinueStudying />
+
+        {/* Homepage sections (admin-configurable) */}
+        {activeHomepageSections.map(section => <SectionRow key={section.id} section={section} />)}
+
+        {/* CTAs */}
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Link href="/notes/contribute" className="group">
+            <div className="flex items-center gap-4 rounded-3xl bg-gradient-brand p-6 text-white shadow-lg shadow-brand-500/20 transition-all hover:-translate-y-0.5 hover:shadow-brand-500/30">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                <FilePlus2 className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <p className="font-display text-lg font-bold">Contribute your notes</p>
+                <p className="text-sm text-white/80">Share study material with thousands of aspirants and get recognised.</p>
+              </div>
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </div>
-            <p className="text-lg font-semibold text-surface-900 mb-2">No notes found</p>
-            <p className="text-sm text-surface-500">Try clearing filters or a different search.</p>
-          </div>
-        ) : view === 'grid' ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {notes.map(note => (
-              <Link key={note.id} href={`/notes/${note.slug}`}>
-                <Card className="card-hover h-full group overflow-hidden">
-                  <CardContent className="p-5 flex flex-col h-full">
-                    <div className="flex items-start justify-between mb-3">
-                      <Badge variant={note.isPremium ? 'premium' : 'success'} size="sm">
-                        {note.isPremium ? 'Premium' : 'Free'}
-                      </Badge>
-                      <span className="flex items-center gap-1 text-xs text-surface-400">
-                        <Eye className="h-3 w-3" /> {note.viewCount}
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-surface-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">
-                      {note.title}
-                    </h3>
-                    {note.summary && (
-                      <p className="text-sm text-surface-500 mb-4 line-clamp-2 leading-relaxed flex-1">{note.summary}</p>
-                    )}
-                    <div className="flex flex-wrap items-center gap-2 text-xs mb-3">
-                      {note.exam && <span className="bg-brand-50 text-brand-700 px-2.5 py-1 rounded-lg font-medium">{note.exam.name}</span>}
-                      {note.subject && <span className="bg-accent-50 text-accent-700 px-2.5 py-1 rounded-lg font-medium">{note.subject.name}</span>}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-semibold text-brand-600 group-hover:gap-1.5 transition-all">
-                      Read Notes <ArrowRight className="h-3 w-3" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {notes.map(note => (
-              <Link key={note.id} href={`/notes/${note.slug}`}>
-                <Card className="card-hover group">
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-brand-100 to-accent-100 flex items-center justify-center shrink-0">
-                        <FileText className="h-5 w-5 text-brand-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant={note.isPremium ? 'premium' : 'success'} size="sm">{note.isPremium ? 'Premium' : 'Free'}</Badge>
-                          <span className="inline-flex items-center gap-1 text-xs text-surface-400"><Eye className="h-3 w-3" /> {note.viewCount}</span>
-                        </div>
-                        <h3 className="font-bold text-surface-900 group-hover:text-brand-600 transition-colors">{note.title}</h3>
-                        {note.summary && <p className="text-sm text-surface-500 mt-1 line-clamp-1">{note.summary}</p>}
-                      </div>
-                      <div className="hidden sm:flex items-center gap-2 shrink-0">
-                        <span className="text-xs bg-brand-50 text-brand-700 px-2.5 py-1 rounded-lg font-medium">{note.exam.name}</span>
-                        <ArrowRight className="h-4 w-4 text-surface-300 group-hover:text-brand-400 transition-colors" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
+          </Link>
+          <Link href="/notes/request" className="group">
+            <div className="flex items-center gap-4 rounded-3xl bg-gradient-accent p-6 text-white shadow-lg shadow-accent-500/20 transition-all hover:-translate-y-0.5 hover:shadow-accent-500/30">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                <HelpCircle className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <p className="font-display text-lg font-bold">Request a resource</p>
+                <p className="text-sm text-white/80">Can't find a PDF or notes? Ask and we'll source it for you.</p>
+              </div>
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </div>
+          </Link>
+        </div>
+
+        {/* Trust strip */}
+        <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <TrustItem icon={Sparkles} title="Verified content" text="Contributions reviewed before publishing" />
+          <TrustItem icon={Library} title="Organised taxonomy" text="Exam & academic hierarchy with topics" />
+          <TrustItem icon={BookMarked} title="Track progress" text="Save, resume and complete resources" />
+          <TrustItem icon={Layers} title="Multiple formats" text="PDFs, books, PYQs, mind maps & more" />
+        </div>
       </div>
+    </div>
+  );
+}
+
+function StatChip({ value, label, tone = 'brand' }: { value: number; label: string; tone?: 'brand' | 'mint' | 'ocean' | 'lavender' }) {
+  const colors: Record<string, string> = {
+    brand: 'text-brand-600', mint: 'text-mint-600', ocean: 'text-ocean-600', lavender: 'text-lavender-600',
+  };
+  return (
+    <div className="flex items-center gap-2 rounded-2xl border border-surface-200 bg-white/80 px-4 py-2.5 shadow-sm backdrop-blur">
+      <span className={`text-2xl font-bold ${colors[tone]}`}>{value}</span>
+      <span className="text-sm text-surface-500">{label}</span>
+    </div>
+  );
+}
+
+function TrustItem({ icon: Icon, title, text }: { icon: React.ComponentType<{ className?: string }>; title: string; text: string }) {
+  return (
+    <div className="rounded-2xl border border-surface-200 bg-surface-50/50 p-4">
+      <Icon className="mb-2 h-5 w-5 text-brand-600" />
+      <p className="text-sm font-bold text-surface-900">{title}</p>
+      <p className="mt-0.5 text-xs text-surface-500">{text}</p>
     </div>
   );
 }
 
 export default function NotesPage() {
   return (
-    <Suspense fallback={
-      <div className="py-24 text-center">
-        <div className="h-12 w-12 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4 animate-pulse-soft">
-          <GraduationCap className="h-6 w-6 text-brand-600" />
-        </div>
-        <p className="text-surface-400 animate-pulse-soft">Loading...</p>
-      </div>
-    }>
-      <NotesContent />
+    <Suspense fallback={<div className="py-24 text-center text-surface-400">Loading...</div>}>
+      <NotesHomeContent />
     </Suspense>
   );
 }

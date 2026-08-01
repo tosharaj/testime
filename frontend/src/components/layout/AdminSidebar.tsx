@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Users, FileText, HelpCircle, BrainCircuit,
   DollarSign, Image, BarChart3, Settings, Ticket, Newspaper,
-  ShoppingCart, Percent, Target, PenTool, BookOpen, BookCheck
+  ShoppingCart, Percent, Target, PenTool, BookOpen, BookCheck,
+  Network, Inbox, ListChecks, Flag, Repeat, Layout
 } from 'lucide-react';
 
 const navGroups = [
@@ -25,6 +26,20 @@ const navGroups = [
       { label: 'NCERT', href: '/admin/ncert', icon: BookCheck },
       { label: 'Current Affairs', href: '/admin/current-affairs', icon: Newspaper },
       { label: 'Media', href: '/admin/media', icon: Image },
+    ],
+  },
+  {
+    label: 'Notes Library',
+    items: [
+      { label: 'Overview', href: '/admin/notes/overview', icon: LayoutDashboard },
+      { label: 'Taxonomy', href: '/admin/notes/taxonomy', icon: Network },
+      { label: 'Resources', href: '/admin/notes/resources', icon: FileText },
+      { label: 'Contributions', href: '/admin/notes/contributions', icon: Inbox },
+      { label: 'Requests', href: '/admin/notes/requests', icon: ListChecks },
+      { label: 'Reports', href: '/admin/notes/reports', icon: Flag },
+      { label: 'Revision Mode', href: '/admin/notes/revision', icon: Repeat },
+      { label: 'Homepage', href: '/admin/notes/homepage', icon: Layout },
+      { label: 'Analytics', href: '/admin/notes/analytics', icon: BarChart3 },
     ],
   },
   {
