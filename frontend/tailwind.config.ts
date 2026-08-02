@@ -110,7 +110,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Fredoka', 'Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         'card': '0 1px 3px 0 rgba(76,139,235,0.06), 0 1px 2px 0 rgba(76,139,235,0.04)',
