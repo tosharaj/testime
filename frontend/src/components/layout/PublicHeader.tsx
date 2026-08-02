@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
-import { Menu, X, Search, User, ChevronDown, LogOut, BookOpen, PenTool, MoreHorizontal } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, Search, User, LogOut } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import ExamsMegaMenu from './mega-menu/ExamsMegaMenu';
 import MobileExamsAccordion from './mega-menu/MobileExamsAccordion';
@@ -11,10 +11,7 @@ const navItems = [
   { label: 'Test Series', href: '/test-series' },
   { label: 'Notes & Resources', href: '/notes' },
   { label: 'Books', href: '/notes/search?type=BOOK' },
-];
-
-const moreItems = [
-  { label: 'Previous Year Questions', href: '/questions' },
+  { label: 'PYQ', href: '/questions' },
   { label: 'Pricing', href: '/pricing' },
 ];
 
@@ -22,9 +19,6 @@ export default function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
-  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
-  const moreDropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -34,19 +28,6 @@ export default function PublicHeader() {
     setIsLoggedIn(!!localStorage.getItem('token'));
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (moreDropdownRef.current && !moreDropdownRef.current.contains(e.target as Node)) setMoreOpen(false);
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    setMoreOpen(false);
-    setMobileMoreOpen(false);
-  }, [pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -95,34 +76,6 @@ export default function PublicHeader() {
               </Link>
             );
           })}
-          <div className="relative" ref={moreDropdownRef}>
-            <button
-              onClick={() => setMoreOpen(!moreOpen)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                moreOpen
-                  ? 'text-brand-600 bg-brand-50'
-                  : 'text-surface-600 hover:text-brand-600 hover:bg-brand-50'
-              }`}
-            >
-              More
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {moreOpen && (
-              <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl border border-surface-100 shadow-card-raised py-1 min-w-[200px] animate-fade-in origin-top-left">
-                {moreItems.map((mi) => (
-                  <Link
-                    key={mi.href}
-                    href={mi.href}
-                    onClick={() => setMoreOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-sm text-surface-700 hover:text-brand-600 hover:bg-brand-50 transition-colors"
-                  >
-                    {mi.label === 'Previous Year Questions' ? <BookOpen className="h-4 w-4" /> : <MoreHorizontal className="h-4 w-4" />}
-                    {mi.label}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -194,30 +147,6 @@ export default function PublicHeader() {
                 </Link>
               );
             })}
-            <div>
-              <button
-                onClick={() => setMobileMoreOpen(!mobileMoreOpen)}
-                className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-surface-600 hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors"
-              >
-                <span>More</span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${mobileMoreOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {mobileMoreOpen && (
-                <div className="ml-4 mt-0.5 space-y-0.5 border-l border-brand-200 pl-2">
-                  {moreItems.map((mi) => (
-                    <Link
-                      key={mi.href}
-                      href={mi.href}
-                      onClick={() => { setMobileOpen(false); setMobileMoreOpen(false); }}
-                      className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-surface-600 hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors"
-                    >
-                      {mi.label === 'Previous Year Questions' ? <BookOpen className="h-4 w-4" /> : <PenTool className="h-4 w-4" />}
-                      {mi.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
           </nav>
         </div>
       )}
