@@ -1,12 +1,14 @@
 'use client';
-import Link from 'next/link';
-import { Bell, LogOut, User, ChevronDown, Settings } from 'lucide-react';
+import { Bell, LogOut, User, ShieldCheck } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { ADMIN_EMAIL } from '@/lib/admin';
 
 export default function AdminHeader() {
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    window.location.href = '/admin/login';
   };
 
   return (
@@ -21,11 +23,11 @@ export default function AdminHeader() {
         </button>
         <div className="flex items-center gap-3 pl-3 border-l border-surface-200">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500 text-white text-sm font-bold shadow-sm">
-            A
+            <ShieldCheck className="h-4 w-4" />
           </div>
           <div className="hidden sm:block">
             <p className="text-sm font-semibold text-surface-900">Admin</p>
-            <p className="text-xs text-surface-400">Administrator</p>
+            <p className="text-xs text-surface-400">{ADMIN_EMAIL}</p>
           </div>
         </div>
         <button
