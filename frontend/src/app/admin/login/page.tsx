@@ -9,10 +9,12 @@ import { supabase } from '@/lib/supabase';
 import { ADMIN_EMAIL } from '@/lib/admin';
 import { Mail, LogIn, ShieldCheck, KeyRound, ArrowLeft } from 'lucide-react';
 
+const OTP_LENGTH = 8;
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState(ADMIN_EMAIL);
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -53,9 +55,20 @@ export default function AdminLoginPage() {
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    if (value && index < 5) {
+    if (value && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '');
+    if (!pasted) return;
+    const next = Array(OTP_LENGTH).fill('');
+    for (let i = 0; i < Math.min(pasted.length, OTP_LENGTH); i++) next[i] = pasted[i];
+    setOtp(next);
+    const nextIndex = Math.min(pasted.length, OTP_LENGTH - 1);
+    inputRefs.current[nextIndex]?.focus();
   };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
@@ -67,7 +80,7 @@ export default function AdminLoginPage() {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const otpString = otp.join('');
-    if (otpString.length !== 6) { setError('Enter the complete 6-digit OTP'); return; }
+    if (otpString.length !== OTP_LENGTH) { setError(`Enter the complete ${OTP_LENGTH}-digit code`); return; }
     setLoading(true); setError(''); setNotice('');
     try {
       const { data, error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: otpString, type: 'email' });
@@ -83,7 +96,7 @@ export default function AdminLoginPage() {
       router.push('/admin/dashboard');
     } catch (err: any) {
       setError(err.message || 'Invalid OTP');
-      setOtp(['', '', '', '', '', '']);
+      setOtp(Array(OTP_LENGTH).fill(''));
       inputRefs.current[0]?.focus();
     } finally {
       setLoading(false);
@@ -97,7 +110,7 @@ export default function AdminLoginPage() {
       const { error } = await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase() });
       if (error) throw new Error(error.message);
       setTimer(120);
-      setOtp(['', '', '', '', '', '']);
+      setOtp(Array(OTP_LENGTH).fill(''));
       setNotice(`OTP resent to ${email.trim().toLowerCase()}`);
     } catch (err: any) {
       setError(err.message || 'Failed to resend OTP');
@@ -119,7 +132,7 @@ export default function AdminLoginPage() {
               </div>
             </div>
             <CardTitle className="text-2xl">Admin OTP Verification</CardTitle>
-            <p className="text-sm text-surface-500 mt-1.5">Enter the 6-digit code sent to your email</p>
+            <p className="text-sm text-surface-500 mt-1.5">Enter the code sent to your email</p>
           </CardHeader>
           <CardContent className="px-8 pb-8">
             {error && (
@@ -139,7 +152,7 @@ export default function AdminLoginPage() {
               </button>
             </div>
             <form onSubmit={handleVerifyOtp} className="space-y-5">
-              <div className="flex gap-2 justify-center">
+              <div className="flex gap-1.5 justify-center" onPaste={handleOtpPaste}>
                 {otp.map((digit, i) => (
                   <input
                     key={i}
@@ -150,7 +163,7 @@ export default function AdminLoginPage() {
                     value={digit}
                     onChange={(e) => handleOtpChange(i, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                    className="w-11 h-12 text-center text-lg font-semibold rounded-lg border border-surface-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+                    className="w-10 h-12 text-center text-lg font-semibold rounded-lg border border-surface-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
                   />
                 ))}
               </div>
