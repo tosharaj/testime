@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { ADMIN_EMAIL } from '@/lib/admin';
 import { Mail, LogIn, ShieldCheck, KeyRound, ArrowLeft } from 'lucide-react';
 
-const OTP_LENGTH = 8;
+const OTP_LENGTH = Number(process.env.NEXT_PUBLIC_OTP_LENGTH) || 8;
 
 export default function AdminLoginPage() {
   const router = useRouter();
