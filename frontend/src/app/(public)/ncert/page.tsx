@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
-import { BookOpen, ArrowRight, ChevronRight, GraduationCap, Library, BookText, BarChart3, Globe2, Pencil, AlarmClock, Atom, Bookmark, ShieldCheck, type LucideIcon } from 'lucide-react';
+import { BookOpen, ArrowRight, ChevronRight, GraduationCap, Library, BookText, BarChart3, Bookmark, ShieldCheck } from 'lucide-react';
 import CrayonStick from '@/components/ui/CrayonStick';
 import { crayon } from '@/lib/crayon';
 
@@ -26,15 +26,14 @@ const classThemes: Record<number, {
   book: string;
   bookCard: string;
   icon: string;
-  heroIcon: LucideIcon;
 }> = {
-  6: { hex: '#35B37E', topBg: 'bg-mint-50', chip: 'bg-mint-50 text-mint-700', number: 'text-mint-600', pill: 'border-mint-500 text-mint-700', blob: 'bg-mint-500', cta: 'text-mint-600', book: 'bg-mint-500', bookCard: 'border-mint-500', icon: 'text-mint-500', heroIcon: Globe2 },
-  7: { hex: '#4BA7E0', topBg: 'bg-ocean-50', chip: 'bg-ocean-50 text-ocean-700', number: 'text-ocean-600', pill: 'border-ocean-500 text-ocean-700', blob: 'bg-ocean-500', cta: 'text-ocean-600', book: 'bg-ocean-500', bookCard: 'border-ocean-500', icon: 'text-ocean-500', heroIcon: Pencil },
-  8: { hex: '#8A70DB', topBg: 'bg-lavender-50', chip: 'bg-lavender-50 text-lavender-700', number: 'text-lavender-600', pill: 'border-lavender-500 text-lavender-700', blob: 'bg-lavender-500', cta: 'text-lavender-600', book: 'bg-lavender-500', bookCard: 'border-lavender-500', icon: 'text-lavender-500', heroIcon: AlarmClock },
-  9: { hex: '#EF6150', topBg: 'bg-coral-50', chip: 'bg-coral-50 text-coral-700', number: 'text-coral-600', pill: 'border-coral-500 text-coral-700', blob: 'bg-coral-500', cta: 'text-coral-600', book: 'bg-coral-500', bookCard: 'border-coral-500', icon: 'text-coral-500', heroIcon: BookText },
-  10: { hex: '#4C8BEB', topBg: 'bg-brand-50', chip: 'bg-brand-50 text-brand-700', number: 'text-brand-600', pill: 'border-brand-500 text-brand-700', blob: 'bg-brand-500', cta: 'text-brand-600', book: 'bg-brand-500', bookCard: 'border-brand-500', icon: 'text-brand-500', heroIcon: Library },
-  11: { hex: '#F7A928', topBg: 'bg-sunny-50', chip: 'bg-sunny-50 text-sunny-700', number: 'text-sunny-600', pill: 'border-sunny-500 text-sunny-700', blob: 'bg-sunny-500', cta: 'text-sunny-600', book: 'bg-sunny-500', bookCard: 'border-sunny-500', icon: 'text-sunny-500', heroIcon: Atom },
-  12: { hex: '#EF5A87', topBg: 'bg-accent-50', chip: 'bg-accent-50 text-accent-700', number: 'text-accent-600', pill: 'border-accent-500 text-accent-700', blob: 'bg-accent-500', cta: 'text-accent-600', book: 'bg-accent-500', bookCard: 'border-accent-500', icon: 'text-accent-500', heroIcon: GraduationCap },
+  6: { hex: '#35B37E', topBg: 'bg-mint-50', chip: 'bg-mint-50 text-mint-700', number: 'text-mint-600', pill: 'border-mint-500 text-mint-700', blob: 'bg-mint-500', cta: 'text-mint-600', book: 'bg-mint-500', bookCard: 'border-mint-500', icon: 'text-mint-500' },
+  7: { hex: '#35B37E', topBg: 'bg-mint-50', chip: 'bg-mint-50 text-mint-700', number: 'text-mint-600', pill: 'border-mint-500 text-mint-700', blob: 'bg-mint-500', cta: 'text-mint-600', book: 'bg-mint-500', bookCard: 'border-mint-500', icon: 'text-mint-500' },
+  8: { hex: '#35B37E', topBg: 'bg-mint-50', chip: 'bg-mint-50 text-mint-700', number: 'text-mint-600', pill: 'border-mint-500 text-mint-700', blob: 'bg-mint-500', cta: 'text-mint-600', book: 'bg-mint-500', bookCard: 'border-mint-500', icon: 'text-mint-500' },
+  9: { hex: '#35B37E', topBg: 'bg-mint-50', chip: 'bg-mint-50 text-mint-700', number: 'text-mint-600', pill: 'border-mint-500 text-mint-700', blob: 'bg-mint-500', cta: 'text-mint-600', book: 'bg-mint-500', bookCard: 'border-mint-500', icon: 'text-mint-500' },
+  10: { hex: '#35B37E', topBg: 'bg-mint-50', chip: 'bg-mint-50 text-mint-700', number: 'text-mint-600', pill: 'border-mint-500 text-mint-700', blob: 'bg-mint-500', cta: 'text-mint-600', book: 'bg-mint-500', bookCard: 'border-mint-500', icon: 'text-mint-500' },
+  11: { hex: '#35B37E', topBg: 'bg-mint-50', chip: 'bg-mint-50 text-mint-700', number: 'text-mint-600', pill: 'border-mint-500 text-mint-700', blob: 'bg-mint-500', cta: 'text-mint-600', book: 'bg-mint-500', bookCard: 'border-mint-500', icon: 'text-mint-500' },
+  12: { hex: '#35B37E', topBg: 'bg-mint-50', chip: 'bg-mint-50 text-mint-700', number: 'text-mint-600', pill: 'border-mint-500 text-mint-700', blob: 'bg-mint-500', cta: 'text-mint-600', book: 'bg-mint-500', bookCard: 'border-mint-500', icon: 'text-mint-500' },
 };
 
 const stats = [
@@ -105,7 +104,6 @@ export default function NcertPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {classes.map(c => {
             const theme = classThemes[c.id];
-            const HeroIcon = theme.heroIcon;
             return (
               <Link key={c.id} href={`/ncert/${c.slug}`} className="group h-full">
                 <Card
@@ -119,16 +117,11 @@ export default function NcertPage() {
                         <img src="/images/ncert_logo.png" alt="NCERT" className="h-4/5 w-4/5 object-contain" />
                       </div>
                       <div className={`flex items-center gap-1.5 rounded-full bg-white border-2 px-3 py-1.5 text-sm font-semibold shadow-sm ${theme.pill}`}>
-                        <BookOpen className="h-4 w-4" /> {c.bookCount} books
+                        <img src="/images/open-book.png" alt="Books" className="h-4 w-4 object-contain" /> {c.bookCount} books
                       </div>
                     </div>
-                    <div className="absolute left-1/2 -translate-x-1/2 bottom-6 flex items-end gap-2.5">
-                      <HeroIcon className={`h-12 w-12 ${theme.icon}`} strokeWidth={1.75} />
-                      <div className="flex flex-col gap-1">
-                        <div className={`h-3.5 w-14 rounded-md ${theme.book} border border-surface-900`} />
-                        <div className={`h-4 w-16 rounded-md bg-white border-2 ${theme.bookCard}`} />
-                        <div className={`h-3.5 w-14 rounded-md ${theme.book} border border-surface-900`} />
-                      </div>
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-5">
+                      <img src="/images/open-book.png" alt="Open Book" className="h-14 w-14 object-contain drop-shadow-sm" />
                     </div>
                     <div className={`absolute -bottom-4 -left-6 h-12 w-36 rounded-full ${theme.blob} opacity-90`} />
                     <div className="absolute -bottom-6 right-0 h-14 w-36 rounded-full bg-white opacity-90" />
