@@ -111,36 +111,34 @@ export default function NcertPage() {
                   style={{ borderBottomColor: theme.hex }}
                 >
                   {/* Illustration area */}
-                  <div className={`h-[9.5rem] relative overflow-hidden p-5 ${theme.topBg}`}>
+                  <div className={`h-[7.5rem] relative overflow-hidden p-4 ${theme.topBg}`}>
                     <div className="relative z-10 flex items-start justify-between">
-                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white border-2 border-surface-900 shadow-sm">
+                      <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white border-2 border-surface-900 shadow-sm">
                         <img src="/images/ncert_logo.png" alt="NCERT" className="h-4/5 w-4/5 object-contain" />
                       </div>
-                      <div className={`flex items-center gap-1.5 rounded-full bg-white border-2 px-3 py-1.5 text-sm font-semibold shadow-sm ${theme.pill}`}>
-                        <img src="/images/open-book.png" alt="Books" className="h-4 w-4 object-contain" /> {c.bookCount} books
+                      <div className={`flex items-center gap-1.5 rounded-full bg-white border-2 px-2.5 py-1 text-xs font-semibold shadow-sm ${theme.pill}`}>
+                        <img src="/images/open-book.png" alt="Books" className="h-3.5 w-3.5 object-contain" /> {c.bookCount} books
                       </div>
                     </div>
-                    <div className="absolute left-1/2 -translate-x-1/2 bottom-5">
-                      <img src="/images/open-book.png" alt="Open Book" className="h-14 w-14 object-contain drop-shadow-sm" />
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-4">
+                      <img src="/images/open-book.png" alt="Open Book" className="h-12 w-12 object-contain drop-shadow-sm" />
                     </div>
-                    <div className={`absolute -bottom-4 -left-6 h-12 w-36 rounded-full ${theme.blob} opacity-90`} />
-                    <div className="absolute -bottom-6 right-0 h-14 w-36 rounded-full bg-white opacity-90" />
                   </div>
                   {/* Body */}
-                  <div className="flex flex-1 flex-col p-5">
-                    <div className="flex items-end justify-between border-b border-surface-200 pb-3">
+                  <div className="flex flex-1 flex-col p-4">
+                    <div className="flex items-end justify-between border-b border-surface-200 pb-2">
                       <div className="flex items-baseline gap-1">
-                        <span className={`font-display text-5xl font-bold ${theme.number}`}>{c.id}</span>
-                        <span className="text-lg font-semibold text-surface-400">th</span>
+                        <span className={`font-display text-4xl font-bold ${theme.number}`}>{c.id}</span>
+                        <span className="text-base font-semibold text-surface-400">th</span>
                       </div>
                       <span className="text-xs font-bold tracking-widest text-surface-400">CLASS</span>
                     </div>
-                    <div className="flex flex-wrap gap-2 pt-4">
+                    <div className="flex flex-wrap gap-2 pt-3">
                       {c.subjects.map(s => (
                         <span key={s} className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${theme.chip}`}>{s}</span>
                       ))}
                     </div>
-                    <div className="mt-auto pt-6">
+                    <div className="mt-auto pt-4">
                       <p className="mb-2 text-xs text-surface-400">Chapter-wise learning</p>
                       <span className={`flex items-center gap-2 text-sm font-bold ${theme.cta} transition-all duration-200 group-hover:gap-3`}>
                         Browse Chapters <ArrowRight className="h-4 w-4" />
