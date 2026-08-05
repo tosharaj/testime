@@ -113,25 +113,25 @@ export default function NcertPage() {
                   style={{ borderBottomColor: theme.hex }}
                 >
                   {/* Illustration area */}
-                  <div className={`h-48 relative overflow-hidden p-5 ${theme.topBg}`}>
+                  <div className={`h-[9.5rem] relative overflow-hidden p-5 ${theme.topBg}`}>
                     <div className="relative z-10 flex items-start justify-between">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white border-2 border-surface-900 shadow-sm">
-                        <BookOpen className="h-5 w-5 text-surface-800" />
+                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white border-2 border-surface-900 shadow-sm">
+                        <img src="/images/ncert_logo.png" alt="NCERT" className="h-4/5 w-4/5 object-contain" />
                       </div>
                       <div className={`flex items-center gap-1.5 rounded-full bg-white border-2 px-3 py-1.5 text-sm font-semibold shadow-sm ${theme.pill}`}>
                         <BookOpen className="h-4 w-4" /> {c.bookCount} books
                       </div>
                     </div>
-                    <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-end gap-2.5">
-                      <HeroIcon className={`h-14 w-14 ${theme.icon}`} strokeWidth={1.75} />
-                      <div className="flex flex-col gap-1.5">
-                        <div className={`h-4 w-16 rounded-md ${theme.book} border border-surface-900`} />
-                        <div className={`h-5 w-20 rounded-md bg-white border-2 ${theme.bookCard}`} />
-                        <div className={`h-4 w-16 rounded-md ${theme.book} border border-surface-900`} />
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-6 flex items-end gap-2.5">
+                      <HeroIcon className={`h-12 w-12 ${theme.icon}`} strokeWidth={1.75} />
+                      <div className="flex flex-col gap-1">
+                        <div className={`h-3.5 w-14 rounded-md ${theme.book} border border-surface-900`} />
+                        <div className={`h-4 w-16 rounded-md bg-white border-2 ${theme.bookCard}`} />
+                        <div className={`h-3.5 w-14 rounded-md ${theme.book} border border-surface-900`} />
                       </div>
                     </div>
-                    <div className={`absolute -bottom-4 -left-6 h-14 w-40 rounded-full ${theme.blob} opacity-90`} />
-                    <div className="absolute -bottom-6 right-0 h-16 w-40 rounded-full bg-white opacity-90" />
+                    <div className={`absolute -bottom-4 -left-6 h-12 w-36 rounded-full ${theme.blob} opacity-90`} />
+                    <div className="absolute -bottom-6 right-0 h-14 w-36 rounded-full bg-white opacity-90" />
                   </div>
                   {/* Body */}
                   <div className="flex flex-1 flex-col p-5">
@@ -147,7 +147,7 @@ export default function NcertPage() {
                         <span key={s} className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${theme.chip}`}>{s}</span>
                       ))}
                     </div>
-                    <div className="mt-auto pt-10">
+                    <div className="mt-auto pt-6">
                       <p className="mb-2 text-xs text-surface-400">Chapter-wise learning</p>
                       <span className={`flex items-center gap-2 text-sm font-bold ${theme.cta} transition-all duration-200 group-hover:gap-3`}>
                         Browse Chapters <ArrowRight className="h-4 w-4" />
