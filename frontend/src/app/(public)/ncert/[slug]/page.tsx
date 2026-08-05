@@ -1,10 +1,11 @@
 'use client';
 import Link from 'next/link';
-import { useParams, notFound } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import { ChevronRight, BookOpen, ArrowLeft, GraduationCap, FileText, BrainCircuit, ListChecks, BookCheck, ExternalLink, BarChart3 } from 'lucide-react';
+import { crayon } from '@/lib/crayon';
+import { ChevronRight, BookOpen, ArrowLeft, GraduationCap, FileText, BrainCircuit, ListChecks, BookCheck, BarChart3, BookMarked, Sparkles } from 'lucide-react';
 
 const classes: Record<string, {
   id: number; name: string; subjects: { name: string; books: { name: string; slug: string; chapters: { name: string; slug: string; summary: string; mcqCount: number; pyqCount: number; testCount: number }[] }[] }[]
@@ -127,58 +128,78 @@ export default function NcertClassPage() {
 
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 rounded-xl bg-ocean-50 flex items-center justify-center">
-              <GraduationCap className="h-5 w-5 text-ocean-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-ocean-500 to-brand-500 text-white shadow-md shadow-ocean-500/20">
+              <GraduationCap className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-surface-900">NCERT {classData.name}</h1>
-              <p className="text-sm text-surface-500">{classData.subjects.length} subjects</p>
+              <h1 className="font-display text-2xl lg:text-3xl font-bold text-surface-900">NCERT {classData.name}</h1>
+              <p className="text-sm text-surface-500">{classData.subjects.length} subjects · chapter-wise learning hub</p>
             </div>
           </div>
         </div>
 
-        <div className="space-y-8">
-          {classData.subjects.map(subject => (
+        <div className="space-y-10">
+          {classData.subjects.map((subject, si) => {
+            const sub = crayon(si);
+            const bookTotal = subject.books.reduce((n, b) => n + b.chapters.length, 0);
+            return (
             <div key={subject.name}>
-              <h2 className="text-lg font-bold text-surface-900 mb-3 flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-brand-500" />
-                {subject.name}
-              </h2>
+              <div className="mb-4 flex items-center gap-3">
+                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${sub.soft} ring-2 ring-white shadow-sm`}>
+                  <BookOpen className={`h-5 w-5 ${sub.text}`} />
+                </div>
+                <div>
+                  <h2 className="font-display text-xl font-bold text-surface-900 leading-tight">{subject.name}</h2>
+                  <p className="text-xs text-surface-400">{subject.books.length} {subject.books.length === 1 ? 'book' : 'books'} · {bookTotal} chapters</p>
+                </div>
+              </div>
               <div className="space-y-4">
                 {subject.books.map(book => (
-                  <Card key={book.slug}>
-                    <CardContent className="p-5">
-                      <h3 className="font-semibold text-surface-900 mb-1">{book.name}</h3>
-                      <p className="text-xs text-surface-500 mb-3">{book.chapters.length} chapters</p>
-                      <div className="space-y-2">
+                  <Card key={book.slug} className="overflow-hidden border-surface-200">
+                    <div className={`h-1.5 bg-gradient-to-r from-ocean-400 to-brand-400`} />
+                    <CardContent className="p-5 sm:p-6">
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${sub.body} text-white shadow-sm`}>
+                          <BookMarked className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-[150px]">
+                          <h3 className="font-display text-lg font-bold text-surface-900 leading-tight">{book.name}</h3>
+                          <p className="text-xs text-surface-400">{book.chapters.length} chapters</p>
+                        </div>
+                        <Badge className={sub.chip} size="sm"><BookOpen className="h-3 w-3 mr-1" /> NCERT</Badge>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
                         {book.chapters.map(ch => (
-                          <div key={ch.slug} className="flex items-start gap-3 p-3 rounded-lg bg-surface-50 hover:bg-surface-100 transition-colors">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <FileText className="h-3.5 w-3.5 text-ocean-500 shrink-0" />
-                                <span className="text-sm font-medium text-surface-900">{ch.name}</span>
-                              </div>
-                              <p className="text-xs text-surface-500 mt-0.5">{ch.summary}</p>
+                          <div key={ch.slug} className="group flex items-start gap-3 rounded-xl border border-surface-100 bg-surface-50/60 p-3 transition-all hover:border-brand-200 hover:bg-white hover:shadow-sm">
+                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-100 text-surface-400 group-hover:bg-brand-50 group-hover:text-brand-500 transition-colors">
+                              <FileText className="h-4 w-4" />
                             </div>
-                            <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                              <span className="inline-flex items-center gap-1 text-xs text-mint-600"><BrainCircuit className="h-3 w-3" />{ch.mcqCount}</span>
-                              <span className="inline-flex items-center gap-1 text-xs text-amber-600"><BarChart3 className="h-3 w-3" />{ch.pyqCount}</span>
-                              <span className="inline-flex items-center gap-1 text-xs text-brand-600"><ListChecks className="h-3 w-3" />{ch.testCount}</span>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-sm font-semibold text-surface-900 truncate">{ch.name}</span>
+                              </div>
+                              <p className="text-xs text-surface-500 line-clamp-2">{ch.summary}</p>
                             </div>
                           </div>
                         ))}
                       </div>
-                      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-surface-100">
-                        <Button variant="ghost" size="sm"><BrainCircuit className="h-3.5 w-3.5 mr-1" /> Practice MCQs</Button>
-                        <Button variant="ghost" size="sm"><BookCheck className="h-3.5 w-3.5 mr-1" /> View Notes</Button>
-                        <Button variant="ghost" size="sm"><ListChecks className="h-3.5 w-3.5 mr-1" /> Take Test</Button>
+                      <div className="mt-4 grid grid-cols-3 gap-2">
+                        <div className="flex items-center justify-center gap-1.5 rounded-lg bg-mint-50 py-2 text-xs font-semibold text-mint-700"><BrainCircuit className="h-4 w-4" />{book.chapters.reduce((n, c) => n + c.mcqCount, 0)} MCQs</div>
+                        <div className="flex items-center justify-center gap-1.5 rounded-lg bg-amber-50 py-2 text-xs font-semibold text-amber-700"><BarChart3 className="h-4 w-4" />{book.chapters.reduce((n, c) => n + c.pyqCount, 0)} PYQs</div>
+                        <div className="flex items-center justify-center gap-1.5 rounded-lg bg-brand-50 py-2 text-xs font-semibold text-brand-700"><ListChecks className="h-4 w-4" />{book.chapters.reduce((n, c) => n + c.testCount, 0)} Tests</div>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2 border-t border-surface-100 pt-4">
+                        <Button size="sm" variant="outline"><BrainCircuit className="h-4 w-4 mr-1" /> Practice MCQs</Button>
+                        <Button size="sm" variant="outline"><BookCheck className="h-4 w-4 mr-1" /> View Notes</Button>
+                        <Button size="sm"><Sparkles className="h-4 w-4 mr-1" /> Take Test</Button>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

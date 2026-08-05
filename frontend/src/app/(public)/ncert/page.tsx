@@ -17,14 +17,14 @@ const classes = [
   { id: 12, name: 'Class 12', slug: 'class-12', subjects: ['History', 'Geography', 'Polity', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Mathematics'], bookCount: 8 },
 ];
 
-const classThemes: Record<number, { gradient: string; chip: string; icon: string; badge: string }> = {
-  6: { gradient: 'from-mint-100 to-brand-50', chip: 'bg-mint-50 text-mint-700', icon: 'bg-white/80 text-mint-700', badge: 'bg-mint-100 text-mint-700' },
-  7: { gradient: 'from-ocean-100 to-brand-50', chip: 'bg-ocean-50 text-ocean-700', icon: 'bg-white/80 text-ocean-700', badge: 'bg-ocean-100 text-ocean-700' },
-  8: { gradient: 'from-lavender-100 to-brand-50', chip: 'bg-lavender-50 text-lavender-700', icon: 'bg-white/80 text-lavender-700', badge: 'bg-lavender-100 text-lavender-700' },
-  9: { gradient: 'from-accent-100 to-brand-50', chip: 'bg-accent-50 text-accent-700', icon: 'bg-white/80 text-accent-700', badge: 'bg-accent-100 text-accent-700' },
-  10: { gradient: 'from-mint-100 to-ocean-50', chip: 'bg-mint-50 text-mint-700', icon: 'bg-white/80 text-mint-700', badge: 'bg-mint-100 text-mint-700' },
-  11: { gradient: 'from-lavender-100 to-ocean-50', chip: 'bg-lavender-50 text-lavender-700', icon: 'bg-white/80 text-lavender-700', badge: 'bg-lavender-100 text-lavender-700' },
-  12: { gradient: 'from-accent-100 to-ocean-50', chip: 'bg-accent-50 text-accent-700', icon: 'bg-white/80 text-accent-700', badge: 'bg-accent-100 text-accent-700' },
+const classThemes: Record<number, { gradient: string; chip: string; icon: string; badge: string; gradText: string; glow: string }> = {
+  6: { gradient: 'from-mint-100 to-brand-50', chip: 'bg-mint-50 text-mint-700', icon: 'bg-white/80 text-mint-700', badge: 'bg-mint-100 text-mint-700', gradText: 'from-mint-500 to-brand-500', glow: 'bg-mint-200/40' },
+  7: { gradient: 'from-ocean-100 to-brand-50', chip: 'bg-ocean-50 text-ocean-700', icon: 'bg-white/80 text-ocean-700', badge: 'bg-ocean-100 text-ocean-700', gradText: 'from-ocean-500 to-brand-500', glow: 'bg-ocean-200/40' },
+  8: { gradient: 'from-lavender-100 to-brand-50', chip: 'bg-lavender-50 text-lavender-700', icon: 'bg-white/80 text-lavender-700', badge: 'bg-lavender-100 text-lavender-700', gradText: 'from-lavender-500 to-brand-500', glow: 'bg-lavender-200/40' },
+  9: { gradient: 'from-accent-100 to-brand-50', chip: 'bg-accent-50 text-accent-700', icon: 'bg-white/80 text-accent-700', badge: 'bg-accent-100 text-accent-700', gradText: 'from-accent-500 to-brand-500', glow: 'bg-accent-200/40' },
+  10: { gradient: 'from-mint-100 to-ocean-50', chip: 'bg-mint-50 text-mint-700', icon: 'bg-white/80 text-mint-700', badge: 'bg-mint-100 text-mint-700', gradText: 'from-mint-500 to-ocean-500', glow: 'bg-mint-200/40' },
+  11: { gradient: 'from-lavender-100 to-ocean-50', chip: 'bg-lavender-50 text-lavender-700', icon: 'bg-white/80 text-lavender-700', badge: 'bg-lavender-100 text-lavender-700', gradText: 'from-lavender-500 to-ocean-500', glow: 'bg-lavender-200/40' },
+  12: { gradient: 'from-accent-100 to-ocean-50', chip: 'bg-accent-50 text-accent-700', icon: 'bg-white/80 text-accent-700', badge: 'bg-accent-100 text-accent-700', gradText: 'from-accent-500 to-ocean-500', glow: 'bg-accent-200/40' },
 };
 
 const stats = [
@@ -91,32 +91,39 @@ export default function NcertPage() {
           })}
         </div>
 
-        <h2 className="text-xl font-bold text-surface-900 mb-5">Browse by Class</h2>
+        <h2 className="font-display text-2xl font-bold text-surface-900 mb-5">Browse by Class</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {classes.map(c => {
             const theme = classThemes[c.id];
             return (
-              <Link key={c.id} href={`/ncert/${c.slug}`}>
-                <Card className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer h-full overflow-hidden">
-                  <div className={`h-1.5 bg-gradient-to-r ${theme.gradient}`} />
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`h-14 w-14 rounded-2xl flex items-center justify-center overflow-hidden shadow-sm ${theme.icon}`}>
-                        <img src="/images/ncert_logo.png" alt="NCERT" className="h-4/5 w-4/5 object-contain" />
+              <Link key={c.id} href={`/ncert/${c.slug}`} className="group h-full">
+                <Card className="h-full overflow-hidden border-surface-200 hover:shadow-card-hover hover:-translate-y-1 cursor-pointer transition-all duration-300">
+                  <div className={`h-2 bg-gradient-to-r ${theme.gradient}`} />
+                  <CardContent className="relative p-5 overflow-hidden">
+                    <div className={`pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full ${theme.glow} blur-2xl opacity-70 transition-opacity group-hover:opacity-100`} />
+                    <div className="relative">
+                      <div className="flex items-start justify-between mb-5">
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm ring-2 ring-white/70 ${theme.icon} transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3`}>
+                          <img src="/images/ncert_logo.png" alt="NCERT" className="h-4/5 w-4/5 object-contain" />
+                        </div>
+                        <Badge className={theme.badge} size="sm">{c.bookCount} books</Badge>
                       </div>
-                      <Badge className={theme.badge} size="sm">{c.bookCount} books</Badge>
-                    </div>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-2xl font-bold text-surface-900">{c.id}</span>
-                      <h3 className="font-bold text-surface-700">{c.name.replace(`Class ${c.id}`, 'th')}</h3>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {c.subjects.map(s => (
-                        <span key={s} className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${theme.chip}`}>{s}</span>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-semibold text-brand-600 group-hover:gap-1.5 transition-all">
-                      Browse Chapters <ArrowRight className="h-3.5 w-3.5" />
+                      <div className="flex items-baseline gap-1.5 mb-3">
+                        <span className={`font-display text-4xl font-bold bg-gradient-to-r ${theme.gradText} bg-clip-text text-transparent`}>{c.id}</span>
+                        <span className="font-display text-base font-semibold text-surface-400">th</span>
+                        <span className="ml-auto text-xs font-bold text-surface-300 uppercase tracking-widest">Class</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {c.subjects.map(s => (
+                          <span key={s} className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${theme.chip} transition-colors`}>{s}</span>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between border-t border-surface-100 pt-4">
+                        <span className="text-xs font-medium text-surface-400">Chapter-wise learning</span>
+                        <span className="flex items-center gap-1 text-sm font-semibold text-brand-600 transition-all duration-200 group-hover:gap-2">
+                          Browse Chapters <ArrowRight className="h-4 w-4" />
+                        </span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
