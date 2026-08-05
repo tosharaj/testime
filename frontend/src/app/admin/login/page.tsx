@@ -7,7 +7,7 @@ import Input from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { supabase } from '@/lib/supabase';
 import { ADMIN_EMAIL } from '@/lib/admin';
-import { Mail, LogIn, ShieldCheck, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Mail, LogIn, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -55,9 +55,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-md relative animate-fade-in-up shadow-xl shadow-brand-500/5">
         <CardHeader className="text-center pt-8">
           <div className="flex justify-center mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl gradient-primary text-white shadow-md">
-              <ShieldCheck className="h-6 w-6" />
-            </div>
+            <img src="/images/admin_icon.png" alt="Admin" className="h-16 w-16 rounded-2xl object-contain shadow-md" />
           </div>
           <CardTitle className="text-2xl">Admin Sign In</CardTitle>
           <p className="text-sm text-surface-500 mt-1.5">Restricted to administrators only</p>

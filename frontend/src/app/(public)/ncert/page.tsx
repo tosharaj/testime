@@ -1,9 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import { BookOpen, ArrowRight, ChevronRight, GraduationCap, Library, BookText, BarChart3 } from 'lucide-react';
+import { BookOpen, ArrowRight, ChevronRight, GraduationCap, Library, BookText, BarChart3, Globe2, Pencil, AlarmClock, Atom, Bookmark, ShieldCheck, type LucideIcon } from 'lucide-react';
 import CrayonStick from '@/components/ui/CrayonStick';
 import { crayon } from '@/lib/crayon';
 
@@ -17,14 +15,26 @@ const classes = [
   { id: 12, name: 'Class 12', slug: 'class-12', subjects: ['History', 'Geography', 'Polity', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Mathematics'], bookCount: 8 },
 ];
 
-const classThemes: Record<number, { gradient: string; chip: string; icon: string; badge: string; gradText: string; glow: string }> = {
-  6: { gradient: 'from-mint-100 to-brand-50', chip: 'bg-mint-50 text-mint-700', icon: 'bg-white/80 text-mint-700', badge: 'bg-mint-100 text-mint-700', gradText: 'from-mint-500 to-brand-500', glow: 'bg-mint-200/40' },
-  7: { gradient: 'from-ocean-100 to-brand-50', chip: 'bg-ocean-50 text-ocean-700', icon: 'bg-white/80 text-ocean-700', badge: 'bg-ocean-100 text-ocean-700', gradText: 'from-ocean-500 to-brand-500', glow: 'bg-ocean-200/40' },
-  8: { gradient: 'from-lavender-100 to-brand-50', chip: 'bg-lavender-50 text-lavender-700', icon: 'bg-white/80 text-lavender-700', badge: 'bg-lavender-100 text-lavender-700', gradText: 'from-lavender-500 to-brand-500', glow: 'bg-lavender-200/40' },
-  9: { gradient: 'from-accent-100 to-brand-50', chip: 'bg-accent-50 text-accent-700', icon: 'bg-white/80 text-accent-700', badge: 'bg-accent-100 text-accent-700', gradText: 'from-accent-500 to-brand-500', glow: 'bg-accent-200/40' },
-  10: { gradient: 'from-mint-100 to-ocean-50', chip: 'bg-mint-50 text-mint-700', icon: 'bg-white/80 text-mint-700', badge: 'bg-mint-100 text-mint-700', gradText: 'from-mint-500 to-ocean-500', glow: 'bg-mint-200/40' },
-  11: { gradient: 'from-lavender-100 to-ocean-50', chip: 'bg-lavender-50 text-lavender-700', icon: 'bg-white/80 text-lavender-700', badge: 'bg-lavender-100 text-lavender-700', gradText: 'from-lavender-500 to-ocean-500', glow: 'bg-lavender-200/40' },
-  12: { gradient: 'from-accent-100 to-ocean-50', chip: 'bg-accent-50 text-accent-700', icon: 'bg-white/80 text-accent-700', badge: 'bg-accent-100 text-accent-700', gradText: 'from-accent-500 to-ocean-500', glow: 'bg-accent-200/40' },
+const classThemes: Record<number, {
+  hex: string;
+  topBg: string;
+  chip: string;
+  number: string;
+  pill: string;
+  blob: string;
+  cta: string;
+  book: string;
+  bookCard: string;
+  icon: string;
+  heroIcon: LucideIcon;
+}> = {
+  6: { hex: '#35B37E', topBg: 'bg-mint-50', chip: 'bg-mint-50 text-mint-700', number: 'text-mint-600', pill: 'border-mint-500 text-mint-700', blob: 'bg-mint-500', cta: 'text-mint-600', book: 'bg-mint-500', bookCard: 'border-mint-500', icon: 'text-mint-500', heroIcon: Globe2 },
+  7: { hex: '#4BA7E0', topBg: 'bg-ocean-50', chip: 'bg-ocean-50 text-ocean-700', number: 'text-ocean-600', pill: 'border-ocean-500 text-ocean-700', blob: 'bg-ocean-500', cta: 'text-ocean-600', book: 'bg-ocean-500', bookCard: 'border-ocean-500', icon: 'text-ocean-500', heroIcon: Pencil },
+  8: { hex: '#8A70DB', topBg: 'bg-lavender-50', chip: 'bg-lavender-50 text-lavender-700', number: 'text-lavender-600', pill: 'border-lavender-500 text-lavender-700', blob: 'bg-lavender-500', cta: 'text-lavender-600', book: 'bg-lavender-500', bookCard: 'border-lavender-500', icon: 'text-lavender-500', heroIcon: AlarmClock },
+  9: { hex: '#EF6150', topBg: 'bg-coral-50', chip: 'bg-coral-50 text-coral-700', number: 'text-coral-600', pill: 'border-coral-500 text-coral-700', blob: 'bg-coral-500', cta: 'text-coral-600', book: 'bg-coral-500', bookCard: 'border-coral-500', icon: 'text-coral-500', heroIcon: BookText },
+  10: { hex: '#4C8BEB', topBg: 'bg-brand-50', chip: 'bg-brand-50 text-brand-700', number: 'text-brand-600', pill: 'border-brand-500 text-brand-700', blob: 'bg-brand-500', cta: 'text-brand-600', book: 'bg-brand-500', bookCard: 'border-brand-500', icon: 'text-brand-500', heroIcon: Library },
+  11: { hex: '#F7A928', topBg: 'bg-sunny-50', chip: 'bg-sunny-50 text-sunny-700', number: 'text-sunny-600', pill: 'border-sunny-500 text-sunny-700', blob: 'bg-sunny-500', cta: 'text-sunny-600', book: 'bg-sunny-500', bookCard: 'border-sunny-500', icon: 'text-sunny-500', heroIcon: Atom },
+  12: { hex: '#EF5A87', topBg: 'bg-accent-50', chip: 'bg-accent-50 text-accent-700', number: 'text-accent-600', pill: 'border-accent-500 text-accent-700', blob: 'bg-accent-500', cta: 'text-accent-600', book: 'bg-accent-500', bookCard: 'border-accent-500', icon: 'text-accent-500', heroIcon: GraduationCap },
 };
 
 const stats = [
@@ -92,56 +102,85 @@ export default function NcertPage() {
         </div>
 
         <h2 className="font-display text-2xl font-bold text-surface-900 mb-5">Browse by Class</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {classes.map(c => {
             const theme = classThemes[c.id];
+            const HeroIcon = theme.heroIcon;
             return (
               <Link key={c.id} href={`/ncert/${c.slug}`} className="group h-full">
-                <Card className="h-full overflow-hidden border-surface-200 hover:shadow-card-hover hover:-translate-y-1 cursor-pointer transition-all duration-300">
-                  <div className={`h-2 bg-gradient-to-r ${theme.gradient}`} />
-                  <CardContent className="relative p-5 overflow-hidden">
-                    <div className={`pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full ${theme.glow} blur-2xl opacity-70 transition-opacity group-hover:opacity-100`} />
-                    <div className="relative">
-                      <div className="flex items-start justify-between mb-5">
-                        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm ring-2 ring-white/70 ${theme.icon} transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3`}>
-                          <img src="/images/ncert_logo.png" alt="NCERT" className="h-4/5 w-4/5 object-contain" />
-                        </div>
-                        <Badge className={theme.badge} size="sm">{c.bookCount} books</Badge>
+                <Card
+                  className="h-full flex flex-col overflow-hidden rounded-2xl border-b-4 hover:shadow-card-hover hover:-translate-y-1 cursor-pointer transition-all duration-300"
+                  style={{ borderBottomColor: theme.hex }}
+                >
+                  {/* Illustration area */}
+                  <div className={`h-48 relative overflow-hidden p-5 ${theme.topBg}`}>
+                    <div className="relative z-10 flex items-start justify-between">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white border-2 border-surface-900 shadow-sm">
+                        <BookOpen className="h-5 w-5 text-surface-800" />
                       </div>
-                      <div className="flex items-baseline gap-1.5 mb-3">
-                        <span className={`font-display text-4xl font-bold bg-gradient-to-r ${theme.gradText} bg-clip-text text-transparent`}>{c.id}</span>
-                        <span className="font-display text-base font-semibold text-surface-400">th</span>
-                        <span className="ml-auto text-xs font-bold text-surface-300 uppercase tracking-widest">Class</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 mb-5">
-                        {c.subjects.map(s => (
-                          <span key={s} className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${theme.chip} transition-colors`}>{s}</span>
-                        ))}
-                      </div>
-                      <div className="flex items-center justify-between border-t border-surface-100 pt-4">
-                        <span className="text-xs font-medium text-surface-400">Chapter-wise learning</span>
-                        <span className="flex items-center gap-1 text-sm font-semibold text-brand-600 transition-all duration-200 group-hover:gap-2">
-                          Browse Chapters <ArrowRight className="h-4 w-4" />
-                        </span>
+                      <div className={`flex items-center gap-1.5 rounded-full bg-white border-2 px-3 py-1.5 text-sm font-semibold shadow-sm ${theme.pill}`}>
+                        <BookOpen className="h-4 w-4" /> {c.bookCount} books
                       </div>
                     </div>
-                  </CardContent>
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-end gap-2.5">
+                      <HeroIcon className={`h-14 w-14 ${theme.icon}`} strokeWidth={1.75} />
+                      <div className="flex flex-col gap-1.5">
+                        <div className={`h-4 w-16 rounded-md ${theme.book} border border-surface-900`} />
+                        <div className={`h-5 w-20 rounded-md bg-white border-2 ${theme.bookCard}`} />
+                        <div className={`h-4 w-16 rounded-md ${theme.book} border border-surface-900`} />
+                      </div>
+                    </div>
+                    <div className={`absolute -bottom-4 -left-6 h-14 w-40 rounded-full ${theme.blob} opacity-90`} />
+                    <div className="absolute -bottom-6 right-0 h-16 w-40 rounded-full bg-white opacity-90" />
+                  </div>
+                  {/* Body */}
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="flex items-end justify-between border-b border-surface-200 pb-3">
+                      <div className="flex items-baseline gap-1">
+                        <span className={`font-display text-5xl font-bold ${theme.number}`}>{c.id}</span>
+                        <span className="text-lg font-semibold text-surface-400">th</span>
+                      </div>
+                      <span className="text-xs font-bold tracking-widest text-surface-400">CLASS</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-4">
+                      {c.subjects.map(s => (
+                        <span key={s} className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${theme.chip}`}>{s}</span>
+                      ))}
+                    </div>
+                    <div className="mt-auto pt-10">
+                      <p className="mb-2 text-xs text-surface-400">Chapter-wise learning</p>
+                      <span className={`flex items-center gap-2 text-sm font-bold ${theme.cta} transition-all duration-200 group-hover:gap-3`}>
+                        Browse Chapters <ArrowRight className="h-4 w-4" />
+                      </span>
+                    </div>
+                  </div>
                 </Card>
               </Link>
             );
           })}
         </div>
 
-        <div className="mt-12 p-6 rounded-xl bg-gradient-to-br from-mint-50 to-ocean-50 border border-mint-100">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-            <div>
-              <h3 className="font-bold text-surface-900 text-lg mb-1">Why NCERT First?</h3>
-              <p className="text-sm text-surface-500">85% of competitive exam questions are directly or indirectly based on NCERT concepts. Master the foundation first.</p>
-            </div>
-            <Link href="/notes">
-              <Button variant="outline">Explore Notes & Resources <ArrowRight className="h-4 w-4 ml-1" /></Button>
-            </Link>
-          </div>
+        {/* Feature strip */}
+        <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 rounded-2xl border border-surface-200 bg-white p-5 shadow-card">
+          {[
+            { icon: BookOpen, title: 'Chapter-wise Learning', desc: 'Learn step by step', tile: 'bg-mint-50 text-mint-600' },
+            { icon: Bookmark, title: 'Curriculum Aligned', desc: 'Based on latest syllabus', tile: 'bg-ocean-50 text-ocean-600' },
+            { icon: BarChart3, title: 'Track Progress', desc: 'Monitor your growth', tile: 'bg-lavender-50 text-lavender-600' },
+            { icon: ShieldCheck, title: 'Expert Content', desc: 'Curated by subject experts', tile: 'bg-coral-50 text-coral-600' },
+          ].map(f => {
+            const Icon = f.icon;
+            return (
+              <div key={f.title} className="flex items-center gap-4">
+                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${f.tile}`}>
+                  <Icon className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-display text-sm font-bold text-surface-900">{f.title}</h3>
+                  <p className="mt-1 text-xs text-surface-500">{f.desc}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
