@@ -16,7 +16,19 @@ export class NcertService {
     return this.prisma.ncertBook.findMany({
       where: cls ? { class: cls } : undefined,
       include: includeChapters
-        ? { chapters: { orderBy: [{ order: 'asc' }, { name: 'asc' }] } }
+        ? {
+            chapters: {
+              include: {
+                links: {
+                  include: {
+                    question: { select: { id: true, text: true, difficulty: true } },
+                    note: { select: { id: true, title: true, summary: true } },
+                  },
+                },
+              },
+              orderBy: [{ order: 'asc' }, { name: 'asc' }],
+            },
+          }
         : undefined,
       orderBy: [{ class: 'asc' }, { subject: 'asc' }, { name: 'asc' }],
     });
