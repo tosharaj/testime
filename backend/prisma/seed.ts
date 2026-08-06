@@ -44,6 +44,25 @@ async function main() {
     },
   });
 
+  const adminSitePassword = await bcrypt.hash('Advait@2025', 12);
+
+  await prisma.user.upsert({
+    where: { email: 'ask@testime.in' },
+    update: {
+      password: adminSitePassword,
+      role: UserRole.SUPER_ADMIN,
+      isActive: true,
+      emailVerified: true,
+    },
+    create: {
+      email: 'ask@testime.in',
+      password: adminSitePassword,
+      name: 'Testime Admin',
+      role: UserRole.SUPER_ADMIN,
+      emailVerified: true,
+    },
+  });
+
   // ─── LAYER 1: EXAM TAXONOMY ──────────────────────────────────────────────
   // exam_family / exam_name / exam_stage
 

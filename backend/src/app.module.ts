@@ -22,6 +22,7 @@ import { MediaModule } from './modules/media/media.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ResultsModule } from './modules/results/results.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { NcertModule } from './modules/ncert/ncert.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     DashboardModule,
     ResultsModule,
     PaymentsModule,
+    NcertModule,
   ],
 })
 export class AppModule {}

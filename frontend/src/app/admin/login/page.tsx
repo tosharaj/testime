@@ -7,6 +7,7 @@ import Input from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { supabase } from '@/lib/supabase';
 import { ADMIN_EMAIL } from '@/lib/admin';
+import { ncertApi, setBackendToken } from '@/lib/ncertApi';
 import { Mail, LogIn, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 export default function AdminLoginPage() {
@@ -35,6 +36,12 @@ export default function AdminLoginPage() {
       }
       if (data.session) {
         localStorage.setItem('token', data.session.access_token);
+      }
+      try {
+        const backend = await ncertApi.backendLogin(addr, password);
+        setBackendToken(backend.accessToken);
+      } catch {
+        setBackendToken(null);
       }
       router.push('/admin/dashboard');
     } catch (err: any) {

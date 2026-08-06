@@ -9,6 +9,8 @@ export class CreateQuestionDto {
   @IsOptional() @IsString() difficulty?: string;
   @IsOptional() @IsInt() year?: number;
   @IsOptional() @IsString() source?: string;
+  @IsOptional() @IsString() sourceType?: string;
+  @IsOptional() @IsBoolean() isPublished?: boolean;
   @IsOptional() @IsString() examId?: string;
   @IsOptional() @IsString() subjectId?: string;
   @IsOptional() @IsString() topicId?: string;

@@ -18,7 +18,7 @@ export class QuestionsService {
     if (filters.topicId) where.topicId = filters.topicId;
     if (filters.difficulty) where.difficulty = filters.difficulty;
     if (filters.year) where.year = filters.year;
-    if (filters.search) where.text = { contains: filters.search, mode: 'insensitive' };
+    if (filters.search) where.text = { contains: filters.search };
 
     const [data, total] = await Promise.all([
       this.prisma.question.findMany({

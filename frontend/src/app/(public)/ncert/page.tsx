@@ -1,9 +1,11 @@
 'use client';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { BookOpen, ArrowRight, ChevronRight, GraduationCap, Library, BookText, BarChart3, Bookmark, ShieldCheck } from 'lucide-react';
 import CrayonStick from '@/components/ui/CrayonStick';
 import { crayon } from '@/lib/crayon';
+import { ncertApi, NcertBook } from '@/lib/ncertApi';
 
 const classes = [
   { id: 6, name: 'Class 6', slug: 'class-6', subjects: ['History', 'Geography', 'Civics', 'Science', 'Mathematics'], bookCount: 5 },
@@ -37,15 +39,49 @@ const classThemes: Record<number, {
 };
 
 const stats = [
-  { label: 'NCERT Books', value: '43+', icon: Library },
+  { key: 'books', label: 'NCERT Books', value: '43+', icon: Library },
   { label: 'Chapters', value: '500+', icon: BookText },
   { label: 'Linked MCQs', value: '10,000+', icon: BarChart3 },
   { label: 'Classes', value: '7', icon: GraduationCap },
 ];
 
 export default function NcertPage() {
+  const [liveClasses, setLiveClasses] = useState<typeof classes | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    ncertApi
+      .getBooks({ includeChapters: true })
+      .then((books: NcertBook[]) => {
+        if (!mounted) return;
+        const byClass = new Map<number, NcertBook[]>();
+        books.forEach((b) => {
+          const list = byClass.get(b.class) ?? [];
+          list.push(b);
+          byClass.set(b.class, list);
+        });
+        setLiveClasses(
+          classes.map((c) => {
+            const cBooks = byClass.get(c.id);
+            if (!cBooks || !cBooks.length) return c;
+            const subjects = Array.from(new Set(cBooks.map((b) => b.subject)));
+            return { ...c, subjects, bookCount: cBooks.length };
+          })
+        );
+      })
+      .catch(() => {
+        if (mounted) setLiveClasses(null);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const displayed = liveClasses ?? classes;
+  const totalBooks = displayed.reduce((n, c) => n + c.bookCount, 0);
+
   return (
-    <div className="bg-white animate-fade-in">
+    <div className="bg-mint-50/40 animate-fade-in">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 lg:py-10">
         <nav className="flex items-center gap-1.5 text-sm text-surface-400 mb-6">
           <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
@@ -91,7 +127,9 @@ export default function NcertPage() {
                     <Icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="font-display text-xl font-bold text-surface-900">{s.value}</p>
+                    <p className="font-display text-xl font-bold text-surface-900">
+                      {s.key === 'books' ? `${totalBooks}+` : s.value}
+                    </p>
                     <p className="text-xs text-surface-500">{s.label}</p>
                   </div>
                 </CardContent>
@@ -102,11 +140,10 @@ export default function NcertPage() {
 
         <h2 className="font-display text-2xl font-bold text-surface-900 mb-5">Browse by Class</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {classes.map(c => {
+          {displayed.map(c => {
             const theme = classThemes[c.id];
             return (
-              <Link key={c.id} href={`/ncert/${c.slug}`} className="group h-full">
-                <Card
+              <Link key={c.id} href={`/ncert/${c.slug}`} className="group h-full">                <Card
                   className="h-full flex flex-col overflow-hidden rounded-2xl border-b-4 hover:shadow-card-hover hover:-translate-y-1 cursor-pointer transition-all duration-300"
                   style={{ borderBottomColor: theme.hex }}
                 >

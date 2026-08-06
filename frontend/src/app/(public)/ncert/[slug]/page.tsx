@@ -1,10 +1,12 @@
 'use client';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { crayon } from '@/lib/crayon';
+import { ncertApi } from '@/lib/ncertApi';
 import { ChevronRight, BookOpen, ArrowLeft, GraduationCap, FileText, BrainCircuit, ListChecks, BookCheck, BarChart3, BookMarked, Sparkles } from 'lucide-react';
 
 const classes: Record<string, {
@@ -96,7 +98,42 @@ const classes: Record<string, {
 export default function NcertClassPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const classData = classes[slug];
+  const [liveData, setLiveData] = useState<typeof classes[string] | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const num = parseInt(slug.replace(/[^0-9]/g, ''), 10);
+    if (!num || Number.isNaN(num)) return;
+    ncertApi
+      .getBooks({ class: num, includeChapters: true })
+      .then((books) => {
+        if (!mounted || !books.length) return;
+        const subjectMap = new Map<string, { name: string; books: any[] }>();
+        books.forEach((b) => {
+          const entry = subjectMap.get(b.subject) ?? { name: b.subject, books: [] };
+          entry.books.push({
+            name: b.name,
+            slug: b.slug,
+            chapters: (b.chapters ?? []).map((ch) => ({
+              name: ch.name,
+              slug: ch.slug,
+              summary: ch.summary ?? '',
+              mcqCount: ch.links?.filter((l) => l.questionId).length ?? 0,
+              pyqCount: 0,
+              testCount: 0,
+            })),
+          });
+          subjectMap.set(b.subject, entry);
+        });
+        setLiveData({ id: num, name: `Class ${num}`, subjects: Array.from(subjectMap.values()) });
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+
+  const classData = liveData ?? classes[slug];
 
   if (!classData) {
     return (
