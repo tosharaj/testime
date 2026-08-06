@@ -27,6 +27,14 @@ export class TestsController {
     return this.testsService.findBySlug(slug);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.TEST_MANAGER, UserRole.CONTENT_EDITOR)
+  @Get('by-chapter/:chapterId')
+  findByChapter(@Param('chapterId') chapterId: string) {
+    return this.testsService.findByChapter(chapterId);
+  }
+
   @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {

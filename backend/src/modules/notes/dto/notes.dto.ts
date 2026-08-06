@@ -6,6 +6,7 @@ export class CreateNoteDto {
   @IsString() content: string;
   @IsOptional() @IsString() contentType?: string;
   @IsOptional() @IsBoolean() isPremium?: boolean;
+  @IsOptional() @IsBoolean() isPublished?: boolean;
   @IsOptional() @IsString() downloadUrl?: string;
   @IsOptional() @IsString() thumbnail?: string;
   @IsOptional() @IsString() examId?: string;

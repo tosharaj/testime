@@ -32,6 +32,31 @@ export class TestsService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
+  async findByChapter(chapterId: string) {
+    return this.prisma.test.findMany({
+      where: { ncertChapterId: chapterId },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        testType: true,
+        testMode: true,
+        accessType: true,
+        duration: true,
+        totalMarks: true,
+        passingMarks: true,
+        negativeMark: true,
+        isFree: true,
+        isPublished: true,
+        status: true,
+        instructions: true,
+        createdAt: true,
+        _count: { select: { questions: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findOne(id: string) {
     const test = await this.prisma.test.findUnique({
       where: { id },

@@ -53,9 +53,9 @@ export class NotesService {
   async create(dto: CreateNoteDto, authorId: string) {
     const slug = generateSlug(dto.title);
     const uniqueSlug = `${slug}-${Date.now()}`;
-    return this.prisma.note.create({
-      data: { ...dto, slug: uniqueSlug, authorId },
-    });
+    const data: any = { ...dto, slug: uniqueSlug, authorId };
+    if (dto.isPublished) data.publishedAt = new Date();
+    return this.prisma.note.create({ data });
   }
 
   async update(id: string, dto: UpdateNoteDto) {

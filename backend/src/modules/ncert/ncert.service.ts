@@ -75,13 +75,21 @@ export class NcertService {
 
   async getChapterLinks(chapterId: string) {
     await this.ensureChapter(chapterId);
-    const links = await this.prisma.ncertChapterLink.findMany({ where: { ncertChapterId: chapterId } });
+    const links = await this.prisma.ncertChapterLink.findMany({
+      where: { ncertChapterId: chapterId },
+      include: {
+        question: { select: { id: true, text: true, difficulty: true } },
+        note: { select: { id: true, title: true, summary: true } },
+      },
+    });
     return {
       chapterId,
       questionIds: links.filter((l) => l.questionId).map((l) => l.questionId as string),
       noteIds: links.filter((l) => l.noteId).map((l) => l.noteId as string),
       chapterIds: links.filter((l) => l.chapterId).map((l) => l.chapterId as string),
       count: links.length,
+      questions: links.filter((l) => l.question).map((l) => l.question),
+      notes: links.filter((l) => l.note).map((l) => l.note),
     };
   }
 

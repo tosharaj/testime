@@ -7,9 +7,10 @@ import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
 import {
   BookOpen, Plus, Edit2, Trash2, Search, GraduationCap, Link2, BrainCircuit,
-  CheckCircle, AlertCircle, Unlink, ChevronLeft, RefreshCw, ServerOff, Layers, ListChecks
+  CheckCircle, AlertCircle, Unlink, ChevronLeft, RefreshCw, ServerOff, Layers, ListChecks,
+  ClipboardList, FileText, Clock
 } from 'lucide-react';
-import { ncertApi, slugify, NcertBook, NcertChapter, NcertQuestion } from '@/lib/ncertApi';
+import { ncertApi, slugify, NcertBook, NcertChapter, NcertQuestion, NcertTest, NcertNote } from '@/lib/ncertApi';
 
 const CLASSES = [6, 7, 8, 9, 10, 11, 12];
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
@@ -17,10 +18,14 @@ const DIFFICULTIES = ['easy', 'medium', 'hard'];
 interface BookForm { subject: string; name: string; slug: string; description: string; }
 interface ChapterForm { name: string; slug: string; summary: string; order: string; }
 interface QuestionForm { text: string; options: string[]; correctIndex: number; explanation: string; difficulty: string; }
+interface QuizForm { title: string; duration: string; totalMarks: string; passingMarks: string; negativeMark: string; instructions: string; isFree: boolean; questionIds: string[]; }
+interface NoteForm { title: string; summary: string; content: string; }
 
 const emptyBookForm: BookForm = { subject: '', name: '', slug: '', description: '' };
 const emptyChapterForm: ChapterForm = { name: '', slug: '', summary: '', order: '' };
 const emptyQuestionForm: QuestionForm = { text: '', options: ['', '', '', ''], correctIndex: 0, explanation: '', difficulty: 'medium' };
+const emptyQuizForm: QuizForm = { title: '', duration: '', totalMarks: '', passingMarks: '', negativeMark: '', instructions: '', isFree: true, questionIds: [] };
+const emptyNoteForm: NoteForm = { title: '', summary: '', content: '' };
 
 const inputCls = 'flex h-10 w-full rounded-xl border-2 border-surface-200 bg-white px-3 py-2 text-sm placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400';
 
@@ -43,6 +48,15 @@ export default function AdminNcertPage() {
   const [questionForm, setQuestionForm] = useState<QuestionForm>(emptyQuestionForm);
   const [linkModal, setLinkModal] = useState<{ chapter: NcertChapter; questionIds: string[] } | null>(null);
   const [linkSearch, setLinkSearch] = useState('');
+
+  const [testsByChapter, setTestsByChapter] = useState<Record<string, NcertTest[]>>({});
+  const [quizModal, setQuizModal] = useState<{ open: boolean; chapter?: NcertChapter }>({ open: false });
+  const [quizForm, setQuizForm] = useState<QuizForm>(emptyQuizForm);
+  const [notesModal, setNotesModal] = useState<{ chapter: NcertChapter; linkedNoteIds: string[] } | null>(null);
+  const [notesList, setNotesList] = useState<NcertNote[]>([]);
+  const [notesLoaded, setNotesLoaded] = useState(false);
+  const [noteForm, setNoteForm] = useState<NoteForm>(emptyNoteForm);
+  const [noteSearch, setNoteSearch] = useState('');
 
   const showNotice = (text: string, error = false) => {
     setNotice({ text, error });
@@ -76,6 +90,32 @@ export default function AdminNcertPage() {
   useEffect(() => {
     if (activeBookId && !books.some((b) => b.id === activeBookId)) setActiveBookId('');
   }, [books, activeBookId]);
+
+  const refreshTests = useCallback(async () => {
+    if (!activeBookId) {
+      setTestsByChapter({});
+      return;
+    }
+    const chapters = books.find((b) => b.id === activeBookId)?.chapters ?? [];
+    const results = await Promise.all(
+      chapters.map(async (ch) => {
+        try {
+          return { id: ch.id, tests: await ncertApi.getTestsByChapter(ch.id) };
+        } catch {
+          return { id: ch.id, tests: [] as NcertTest[] };
+        }
+      })
+    );
+    const map: Record<string, NcertTest[]> = {};
+    results.forEach((r) => {
+      map[r.id] = r.tests;
+    });
+    setTestsByChapter(map);
+  }, [activeBookId, books]);
+
+  useEffect(() => {
+    refreshTests();
+  }, [refreshTests]);
 
   const subjects = useMemo(() => Array.from(new Set(books.map((b) => b.subject))).sort(), [books]);
   const filteredBooks = useMemo(
@@ -277,6 +317,137 @@ export default function AdminNcertPage() {
 
   const linkedCount = (chapter: NcertChapter) =>
     chapter.links?.filter((l) => l.questionId).length ?? 0;
+  const linkedNoteCount = (chapter: NcertChapter) =>
+    chapter.links?.filter((l) => l.noteId).length ?? 0;
+  const quizCount = (chapterId: string) => testsByChapter[chapterId]?.length ?? 0;
+
+  // ─── QUIZ ────────────────────────────────────────────────────────────────
+  const openQuizModal = (chapter: NcertChapter) => {
+    const linked = (chapter.links ?? []).filter((l) => l.questionId).map((l) => l.questionId as string);
+    setQuizForm({ ...emptyQuizForm, questionIds: linked });
+    setQuizModal({ open: true, chapter });
+  };
+
+  const handleSaveQuiz = async () => {
+    const chapter = quizModal.chapter;
+    if (!chapter) return;
+    const duration = parseInt(quizForm.duration, 10);
+    const totalMarks = parseInt(quizForm.totalMarks, 10);
+    if (!quizForm.title.trim() || isNaN(duration) || isNaN(totalMarks)) {
+      showNotice('Quiz title, duration and total marks are required.', true);
+      return;
+    }
+    if (quizForm.questionIds.length === 0) {
+      showNotice('Select at least one question for the quiz.', true);
+      return;
+    }
+    setBusy(true);
+    try {
+      await ncertApi.createTest({
+        title: quizForm.title.trim(),
+        testType: 'NCERT_BASED_TEST',
+        testMode: 'PRACTICE',
+        accessType: quizForm.isFree ? 'FREE' : 'PREMIUM',
+        duration,
+        totalMarks,
+        passingMarks: quizForm.passingMarks ? parseInt(quizForm.passingMarks, 10) : undefined,
+        negativeMark: quizForm.negativeMark ? parseFloat(quizForm.negativeMark) : undefined,
+        isFree: quizForm.isFree,
+        instructions: quizForm.instructions.trim() || undefined,
+        ncertChapterId: chapter.id,
+        questionIds: quizForm.questionIds,
+      });
+      setQuizModal({ open: false });
+      await refreshTests();
+      showNotice('Quiz created and linked to the chapter.');
+    } catch (e: any) {
+      showNotice(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDeleteQuiz = async (test: NcertTest, chapter: NcertChapter) => {
+    if (!window.confirm(`Delete quiz "${test.title}"? This cannot be undone.`)) return;
+    setBusy(true);
+    try {
+      await ncertApi.deleteTest(test.id);
+      await refreshTests();
+      showNotice('Quiz deleted.');
+    } catch (e: any) {
+      showNotice(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ─── NOTES ───────────────────────────────────────────────────────────────
+  const openNotesModal = async (chapter: NcertChapter) => {
+    setBusy(true);
+    setNoteForm(emptyNoteForm);
+    setNoteSearch('');
+    try {
+      if (!notesLoaded) {
+        const res = await ncertApi.getNotes();
+        setNotesList(res?.data ?? []);
+        setNotesLoaded(true);
+      }
+      const links = await ncertApi.getChapterLinks(chapter.id);
+      setNotesModal({ chapter, linkedNoteIds: links.noteIds });
+    } catch (e: any) {
+      showNotice(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleNoteLink = async (noteId: string) => {
+    if (!notesModal) return;
+    const exists = notesModal.linkedNoteIds.includes(noteId);
+    const updated = exists
+      ? notesModal.linkedNoteIds.filter((id) => id !== noteId)
+      : [...notesModal.linkedNoteIds, noteId];
+    const prev = notesModal.linkedNoteIds;
+    setNotesModal({ ...notesModal, linkedNoteIds: updated });
+    try {
+      await ncertApi.setChapterLinks(notesModal.chapter.id, { noteIds: updated });
+      await load(activeClass);
+    } catch (e: any) {
+      setNotesModal({ ...notesModal, linkedNoteIds: prev });
+      showNotice(e.message, true);
+    }
+  };
+
+  const handleCreateNote = async () => {
+    const chapter = notesModal?.chapter;
+    if (!chapter) return;
+    if (!noteForm.title.trim() || !noteForm.content.trim()) {
+      showNotice('Note title and content are required.', true);
+      return;
+    }
+    setBusy(true);
+    try {
+      const created = await ncertApi.createNote({
+        title: noteForm.title.trim(),
+        summary: noteForm.summary.trim() || undefined,
+        content: noteForm.content,
+        contentType: 'markdown',
+        tags: 'NCERT',
+        isPublished: true,
+      });
+      setNotesList((prev) => (prev.some((n) => n.id === created.id) ? prev : [created, ...prev]));
+      const updated = [...(notesModal?.linkedNoteIds ?? []), created.id];
+      await ncertApi.setChapterLinks(chapter.id, { noteIds: updated });
+      setNotesModal({ ...notesModal!, linkedNoteIds: updated });
+      setNoteForm(emptyNoteForm);
+      await load(activeClass);
+      showNotice('Note created and linked to the chapter.');
+    } catch (e: any) {
+      showNotice(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const searchableQuestions = useMemo(
     () =>
@@ -390,8 +561,10 @@ export default function AdminNcertPage() {
                 <thead>
                   <tr className="border-b border-surface-200 text-left text-xs font-medium text-surface-400 uppercase tracking-wider">
                     <th className="px-5 py-3">Chapter</th>
-                    <th className="px-5 py-3 max-w-[300px]">Summary</th>
-                    <th className="px-5 py-3 text-center">Linked MCQs</th>
+                    <th className="px-5 py-3 max-w-[260px]">Summary</th>
+                    <th className="px-5 py-3 text-center">MCQs</th>
+                    <th className="px-5 py-3 text-center">Quizzes</th>
+                    <th className="px-5 py-3 text-center">Notes</th>
                     <th className="px-5 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -408,6 +581,16 @@ export default function AdminNcertPage() {
                           <BrainCircuit className="h-3 w-3 mr-0.5" />{linkedCount(ch)}
                         </Badge>
                       </td>
+                      <td className="px-5 py-4 text-center">
+                        <Badge variant={quizCount(ch.id) > 0 ? 'success' : 'default'} size="sm">
+                          <ClipboardList className="h-3 w-3 mr-0.5" />{quizCount(ch.id)}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        <Badge variant={linkedNoteCount(ch) > 0 ? 'success' : 'default'} size="sm">
+                          <FileText className="h-3 w-3 mr-0.5" />{linkedNoteCount(ch)}
+                        </Badge>
+                      </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-1">
                           <button
@@ -416,6 +599,20 @@ export default function AdminNcertPage() {
                             title="Link Questions"
                           >
                             <Link2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => openQuizModal(ch)}
+                            className="p-2 text-surface-400 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition-colors"
+                            title="Create Quiz"
+                          >
+                            <ClipboardList className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => openNotesModal(ch)}
+                            className="p-2 text-surface-400 hover:text-violet-600 rounded-xl hover:bg-violet-50 transition-colors"
+                            title="Notes & Materials"
+                          >
+                            <FileText className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => openQuestionModal(ch)}
@@ -724,6 +921,203 @@ export default function AdminNcertPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-surface-500">{linkModal.questionIds.length} linked to this chapter</span>
               <Button onClick={() => setLinkModal(null)}>Done</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* ── QUIZ MODAL ──────────────────────────────────────────────────── */}
+      <Modal isOpen={quizModal.open} onClose={() => setQuizModal({ open: false })} title={`Create Quiz — ${quizModal.chapter?.name ?? ''}`} size="lg">
+        {quizModal.chapter && (
+          <div className="space-y-4">
+            <p className="text-sm text-surface-500">
+              Build a chapter quiz from its linked MCQs. It will appear as a "Take Test" option for students.
+            </p>
+            <div className={fieldCls}>
+              <label className="block text-sm font-medium text-surface-700">Quiz title</label>
+              <Input value={quizForm.title} onChange={(e) => setQuizForm((f) => ({ ...f, title: e.target.value }))} placeholder="e.g. The French Revolution — Quiz" />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className={fieldCls}>
+                <label className="block text-sm font-medium text-surface-700">Duration (min)</label>
+                <Input type="number" value={quizForm.duration} onChange={(e) => setQuizForm((f) => ({ ...f, duration: e.target.value }))} placeholder="e.g. 10" />
+              </div>
+              <div className={fieldCls}>
+                <label className="block text-sm font-medium text-surface-700">Total marks</label>
+                <Input type="number" value={quizForm.totalMarks} onChange={(e) => setQuizForm((f) => ({ ...f, totalMarks: e.target.value }))} placeholder="e.g. 20" />
+              </div>
+              <div className={fieldCls}>
+                <label className="block text-sm font-medium text-surface-700">Negative mark</label>
+                <Input type="number" step="0.25" value={quizForm.negativeMark} onChange={(e) => setQuizForm((f) => ({ ...f, negativeMark: e.target.value }))} placeholder="0.25 (blank = none)" />
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className={fieldCls}>
+                <label className="block text-sm font-medium text-surface-700">Passing marks (optional)</label>
+                <Input type="number" value={quizForm.passingMarks} onChange={(e) => setQuizForm((f) => ({ ...f, passingMarks: e.target.value }))} placeholder="e.g. 8" />
+              </div>
+              <div className={fieldCls}>
+                <label className="block text-sm font-medium text-surface-700">Access</label>
+                <select
+                  value={quizForm.isFree ? 'FREE' : 'PREMIUM'}
+                  onChange={(e) => setQuizForm((f) => ({ ...f, isFree: e.target.value === 'FREE' }))}
+                  className={inputCls}
+                >
+                  <option value="FREE">Free</option>
+                  <option value="PREMIUM">Premium</option>
+                </select>
+              </div>
+            </div>
+            <div className={fieldCls}>
+              <label className="block text-sm font-medium text-surface-700">Instructions</label>
+              <textarea value={quizForm.instructions} onChange={(e) => setQuizForm((f) => ({ ...f, instructions: e.target.value }))} rows={2} className={inputCls} placeholder="Optional instructions shown before the quiz starts" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-surface-700 mb-2">Questions ({quizForm.questionIds.length} selected)</p>
+              <div className="max-h-[30vh] overflow-y-auto space-y-2 rounded-xl border border-surface-200 p-3">
+                {(quizModal.chapter.links ?? []).filter((l) => l.question).map((l) => {
+                  const q = l.question!;
+                  const selected = quizForm.questionIds.includes(q.id);
+                  return (
+                    <div
+                      key={q.id}
+                      onClick={() =>
+                        setQuizForm((f) => ({
+                          ...f,
+                          questionIds: selected ? f.questionIds.filter((id) => id !== q.id) : [...f.questionIds, q.id],
+                        }))
+                      }
+                      className={`flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${
+                        selected ? 'border-indigo-200 bg-indigo-50/50' : 'border-surface-200 hover:border-surface-300'
+                      }`}
+                    >
+                      <div className="mt-0.5">
+                        {selected ? (
+                          <CheckCircle className="h-5 w-5 text-indigo-500" />
+                        ) : (
+                          <div className="h-5 w-5 rounded-full border-2 border-surface-300" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-surface-900">{q.text}</p>
+                        <Badge size="sm">{q.difficulty ?? 'medium'}</Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+                {(quizModal.chapter.links ?? []).filter((l) => l.question).length === 0 && (
+                  <p className="text-center text-sm text-surface-400 py-6">
+                    No linked MCQs yet. Link or add questions to this chapter first.
+                  </p>
+                )}
+              </div>
+            </div>
+            {quizCount(quizModal.chapter.id) > 0 && (
+              <div>
+                <p className="text-sm font-medium text-surface-700 mb-2">Existing quizzes</p>
+                <div className="space-y-2">
+                  {(testsByChapter[quizModal.chapter.id] ?? []).map((t) => (
+                    <div key={t.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border border-surface-200">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-surface-900 truncate">{t.title}</p>
+                        <p className="text-xs text-surface-400">
+                          <Clock className="h-3 w-3 inline mr-0.5" />{t.duration} min · {t._count?.questions ?? 0} Qs · {t.totalMarks} marks · {t.isFree ? 'Free' : 'Premium'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteQuiz(t, quizModal.chapter!)}
+                        className="p-2 text-surface-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors shrink-0"
+                        title="Delete Quiz"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setQuizModal({ open: false })}>Cancel</Button>
+              <Button onClick={handleSaveQuiz} disabled={busy}>{busy ? 'Creating…' : 'Create Quiz'}</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* ── NOTES MODAL ─────────────────────────────────────────────────── */}
+      <Modal isOpen={!!notesModal} onClose={() => setNotesModal(null)} title="Notes & Materials" size="lg">
+        {notesModal && (
+          <div className="space-y-5">
+            <p className="text-sm text-surface-500">
+              {notesModal.chapter.name} · {notesModal.linkedNoteIds.length} linked
+            </p>
+
+            <div className="rounded-2xl border border-surface-200 p-4 space-y-3">
+              <p className="text-sm font-semibold text-surface-700">Create a new note</p>
+              <div className={fieldCls}>
+                <label className="block text-sm font-medium text-surface-700">Title</label>
+                <Input value={noteForm.title} onChange={(e) => setNoteForm((f) => ({ ...f, title: e.target.value }))} placeholder="e.g. The French Revolution — Key Facts" />
+              </div>
+              <div className={fieldCls}>
+                <label className="block text-sm font-medium text-surface-700">Summary</label>
+                <Input value={noteForm.summary} onChange={(e) => setNoteForm((f) => ({ ...f, summary: e.target.value }))} placeholder="One-line summary shown on the chapter page" />
+              </div>
+              <div className={fieldCls}>
+                <label className="block text-sm font-medium text-surface-700">Content</label>
+                <textarea value={noteForm.content} onChange={(e) => setNoteForm((f) => ({ ...f, content: e.target.value }))} rows={4} className={inputCls} placeholder="Write the material. Plain text / Markdown supported." />
+              </div>
+              <div className="flex items-center justify-end">
+                <Button size="sm" onClick={handleCreateNote} disabled={busy}>{busy ? 'Saving…' : 'Create & Link'}</Button>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-surface-700 mb-2">Link existing notes</p>
+              <div className="relative mb-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400 pointer-events-none" />
+                <input
+                  value={noteSearch}
+                  onChange={(e) => setNoteSearch(e.target.value)}
+                  placeholder="Search notes…"
+                  className="w-full rounded-xl border-2 border-surface-200 pl-9 pr-3 py-2 text-sm text-surface-700 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                />
+              </div>
+              <div className="max-h-[30vh] overflow-y-auto space-y-2 rounded-xl border border-surface-200 p-3">
+                {notesList
+                  .filter((n) => !noteSearch || n.title.toLowerCase().includes(noteSearch.toLowerCase()))
+                  .map((n) => {
+                    const linked = notesModal.linkedNoteIds.includes(n.id);
+                    return (
+                      <div
+                        key={n.id}
+                        onClick={() => toggleNoteLink(n.id)}
+                        className={`flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${
+                          linked ? 'border-violet-200 bg-violet-50/50' : 'border-surface-200 hover:border-surface-300'
+                        }`}
+                      >
+                        <div className="mt-0.5">
+                          {linked ? (
+                            <CheckCircle className="h-5 w-5 text-violet-500" />
+                          ) : (
+                            <div className="h-5 w-5 rounded-full border-2 border-surface-300" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-surface-900">{n.title}</p>
+                          {n.summary && <p className="text-xs text-surface-400 mt-0.5 truncate">{n.summary}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                {notesList.length === 0 && (
+                  <p className="text-center text-sm text-surface-400 py-6">No notes yet. Create one above.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-surface-500">{notesModal.linkedNoteIds.length} linked to this chapter</span>
+              <Button onClick={() => setNotesModal(null)}>Done</Button>
             </div>
           </div>
         )}

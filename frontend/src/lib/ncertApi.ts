@@ -75,6 +75,41 @@ export interface NcertLinkedQuestion {
   difficulty?: string | null;
 }
 
+export interface NcertLinkedNote {
+  id: string;
+  title: string;
+  summary?: string | null;
+}
+
+export interface NcertNote {
+  id: string;
+  title: string;
+  slug?: string;
+  summary?: string | null;
+  content?: string;
+  isPublished?: boolean;
+  createdAt?: string;
+}
+
+export interface NcertTest {
+  id: string;
+  title: string;
+  slug: string;
+  testType?: string | null;
+  testMode?: string | null;
+  accessType?: string | null;
+  duration: number;
+  totalMarks: number;
+  passingMarks?: number | null;
+  negativeMark?: number | null;
+  isFree?: boolean;
+  isPublished?: boolean;
+  status?: string | null;
+  instructions?: string | null;
+  createdAt?: string;
+  _count?: { questions: number };
+}
+
 export interface NcertChapterLink {
   id: string;
   questionId?: string | null;
@@ -113,6 +148,8 @@ export interface ChapterLinks {
   noteIds: string[];
   chapterIds: string[];
   count: number;
+  questions?: NcertLinkedQuestion[];
+  notes?: NcertLinkedNote[];
 }
 
 export const ncertApi = {
@@ -146,6 +183,15 @@ export const ncertApi = {
   updateQuestion: (id: string, body: any) =>
     request<NcertQuestion>(`/questions/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteQuestion: (id: string) => request(`/questions/${id}`, { method: 'DELETE' }),
+
+  getTestsByChapter: (chapterId: string) => request<NcertTest[]>(`/tests/by-chapter/${chapterId}`),
+  createTest: (body: any) => request<NcertTest>('/tests', { method: 'POST', body: JSON.stringify(body) }),
+  deleteTest: (id: string) => request(`/tests/${id}`, { method: 'DELETE' }),
+
+  getNotes: (params?: { limit?: number; search?: string }) =>
+    request<{ data?: NcertNote[] }>(`/notes${toQuery({ limit: 100, ...params })}`),
+  createNote: (body: any) =>
+    request<NcertNote>('/notes', { method: 'POST', body: JSON.stringify(body) }),
 
   backendLogin: async (email: string, password: string) =>
     request<{ accessToken: string }>('/auth/login', {
