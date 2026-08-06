@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -13,7 +14,7 @@ export default function MainsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/questions?limit=500', {
+    fetch(`${API_BASE}/questions?limit=500`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     }).then(r => r.json()).then(d => {
       setAllQuestions(d.data || []);

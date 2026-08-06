@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -8,7 +9,7 @@ export default function AdminCategoriesPage() {
   const [exams, setExams] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/exams').then(r => r.json()).then(setExams).catch(console.error);
+    fetch(`${API_BASE}/exams`).then(r => r.json()).then(setExams).catch(console.error);
   }, []);
 
   return (

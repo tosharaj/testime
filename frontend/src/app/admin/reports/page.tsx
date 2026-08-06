@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { BarChart3, TrendingUp, Users, FileText, DollarSign } from 'lucide-react';
@@ -7,7 +8,7 @@ export default function AdminReportsPage() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/dashboard/admin', {
+    fetch(`${API_BASE}/dashboard/admin`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     }).then(r => r.json()).then(setData).catch(console.error);
   }, []);

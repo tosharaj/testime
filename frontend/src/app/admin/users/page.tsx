@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -14,7 +15,7 @@ export default function AdminUsersPage() {
 
   const fetchUsers = () => {
     const q = `?page=${page}&limit=20${search ? `&search=${search}` : ''}`;
-    fetch(`http://localhost:4000/api/users${q}`, {
+    fetch(`${API_BASE}/users${q}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     }).then(r => r.json()).then(d => { setUsers(d.data || []); setTotal(d.total || 0); }).catch(console.error);
   };

@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -10,7 +11,7 @@ export default function AdminPlansPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:4000/api/plans', {
+    fetch(`${API_BASE}/plans`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(setPlans).catch(console.error);
   }, []);

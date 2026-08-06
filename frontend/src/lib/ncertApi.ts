@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
+import { API_BASE } from '@/lib/apiBase';
 
 export function getBackendToken(): string | null {
   if (typeof window === 'undefined') return null;

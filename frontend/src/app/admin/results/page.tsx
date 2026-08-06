@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -8,7 +9,7 @@ export default function AdminResultsPage() {
   const [results, setResults] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/tests?limit=20', {
+    fetch(`${API_BASE}/tests?limit=20`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     }).then(r => r.json()).then((d: any) => setResults(d.data || [])).catch(console.error);
   }, []);

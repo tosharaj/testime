@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -9,7 +10,7 @@ export default function AdminMediaPage() {
   const [files, setFiles] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/media', {
+    fetch(`${API_BASE}/media`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     }).then(r => r.json()).then(d => setFiles(d.data || [])).catch(console.error);
   }, []);

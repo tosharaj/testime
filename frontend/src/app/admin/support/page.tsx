@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -10,7 +11,7 @@ export default function AdminSupportPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:4000/api/support/tickets', {
+    fetch(`${API_BASE}/support/tickets`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => setTickets(d.data || [])).catch(console.error);
   }, []);

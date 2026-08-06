@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -11,7 +12,7 @@ export default function AdminNotesPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:4000/api/notes?limit=50', {
+    fetch(`${API_BASE}/notes?limit=50`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => setNotes(d.data || [])).catch(console.error);
   }, []);

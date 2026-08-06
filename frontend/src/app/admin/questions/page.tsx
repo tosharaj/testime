@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -51,7 +52,7 @@ export default function AdminQuestionsPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:4000/api/questions?limit=200', {
+    fetch(`${API_BASE}/questions?limit=200`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => setQuestions(d.data || [])).catch(console.error);
   }, []);

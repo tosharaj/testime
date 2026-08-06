@@ -1,4 +1,5 @@
 'use client';
+import { API_BASE } from '@/lib/apiBase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -11,7 +12,7 @@ export default function AdminCouponsPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:4000/api/coupons', {
+    fetch(`${API_BASE}/coupons`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(setCoupons).catch(console.error);
   }, []);
