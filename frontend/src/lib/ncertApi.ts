@@ -152,6 +152,14 @@ export interface ChapterLinks {
   notes?: NcertLinkedNote[];
 }
 
+export interface ImportResult {
+  booksCreated: number;
+  chaptersCreated: number;
+  questionsCreated: number;
+  questionsSkipped: number;
+  errors: { row: number; message: string }[];
+}
+
 export const ncertApi = {
   getBooks: (params?: { class?: number; includeChapters?: boolean }) =>
     request<NcertBook[]>(`/ncert/books${toQuery(params)}`),
@@ -174,6 +182,12 @@ export const ncertApi = {
     request<ChapterLinks>(`/ncert/chapters/${id}/links`, {
       method: 'PUT',
       body: JSON.stringify(body),
+    }),
+
+  importNcertCsv: (csv: string) =>
+    request<ImportResult>('/ncert/import', {
+      method: 'POST',
+      body: JSON.stringify({ csv }),
     }),
 
   getQuestions: (params?: { limit?: number; search?: string }) =>

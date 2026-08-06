@@ -8,9 +8,9 @@ import Modal from '@/components/ui/Modal';
 import {
   BookOpen, Plus, Edit2, Trash2, Search, GraduationCap, Link2, BrainCircuit,
   CheckCircle, AlertCircle, Unlink, ChevronLeft, RefreshCw, ServerOff, Layers, ListChecks,
-  ClipboardList, FileText, Clock
+  ClipboardList, FileText, Clock, Upload, FileDown, FileUp
 } from 'lucide-react';
-import { ncertApi, slugify, NcertBook, NcertChapter, NcertQuestion, NcertTest, NcertNote } from '@/lib/ncertApi';
+import { ncertApi, slugify, NcertBook, NcertChapter, NcertQuestion, NcertTest, NcertNote, ImportResult } from '@/lib/ncertApi';
 
 const CLASSES = [6, 7, 8, 9, 10, 11, 12];
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
@@ -57,6 +57,11 @@ export default function AdminNcertPage() {
   const [notesLoaded, setNotesLoaded] = useState(false);
   const [noteForm, setNoteForm] = useState<NoteForm>(emptyNoteForm);
   const [noteSearch, setNoteSearch] = useState('');
+
+  const [importOpen, setImportOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [importBusy, setImportBusy] = useState(false);
 
   const showNotice = (text: string, error = false) => {
     setNotice({ text, error });
@@ -449,6 +454,53 @@ export default function AdminNcertPage() {
     }
   };
 
+  // ─── BULK IMPORT ────────────────────────────────────────────────────────
+  const IMPORT_TEMPLATE_HEADER =
+    'class,subject,book,chapter,question,option_a,option_b,option_c,option_d,correct,explanation,difficulty';
+
+  const downloadImportTemplate = () => {
+    const sample = [
+      '6,History,Our Pasts I,What Where How and When?,What did early people use to make tools?,Stone and wood,Copper,Iron,Bronze,A,Explanation text,medium',
+      '11,Polity,Indian Constitution at Work,Constitution: Why and How?,Which date marks the adoption of the Constitution?,26 January 1950,15 August 1947,26 November 1949,2 October 1948,C,,easy',
+      '6,History,Our Pasts I,From Hunting-Gathering to Growing Food,,,,,,,',
+    ].join('\n');
+    const blob = new Blob(['\uFEFF' + IMPORT_TEMPLATE_HEADER + '\n' + sample + '\n'], {
+      type: 'text/csv;charset=utf-8',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ncert-import-template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImportFile(e.target.files?.[0] || null);
+    setImportResult(null);
+  };
+
+  const handleRunImport = async () => {
+    if (!importFile) {
+      showNotice('Choose a CSV file first.', true);
+      return;
+    }
+    setImportBusy(true);
+    setImportResult(null);
+    try {
+      const text = await importFile.text();
+      const result = await ncertApi.importNcertCsv(text.replace(/^\uFEFF/, ''));
+      setImportResult(result);
+      await load(activeClass);
+      if (result.errors.length) showNotice(`Import finished with ${result.errors.length} row error(s).`, true);
+      else showNotice('Import completed successfully.');
+    } catch (e: any) {
+      showNotice(e.message, true);
+    } finally {
+      setImportBusy(false);
+    }
+  };
+
   const searchableQuestions = useMemo(
     () =>
       questions.filter(
@@ -661,9 +713,14 @@ export default function AdminNcertPage() {
                 Class {activeClass} Books
                 <Badge variant="info" size="sm">{books.length}</Badge>
               </CardTitle>
-              <Button size="sm" onClick={() => openBookModal()} disabled={!backendOk || busy}>
-                <Plus className="h-4 w-4 mr-1" /> Add Book
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => setImportOpen(true)} disabled={!backendOk || busy}>
+                  <Upload className="h-4 w-4 mr-1" /> Bulk Import
+                </Button>
+                <Button size="sm" onClick={() => openBookModal()} disabled={!backendOk || busy}>
+                  <Plus className="h-4 w-4 mr-1" /> Add Book
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -1121,6 +1178,84 @@ export default function AdminNcertPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* ── IMPORT MODAL ────────────────────────────────────────────────── */}
+      <Modal isOpen={importOpen} onClose={() => setImportOpen(false)} title="Bulk Import (CSV)" size="lg">
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-surface-200 p-4 space-y-2">
+            <p className="text-sm font-semibold text-surface-700">How it works</p>
+            <p className="text-xs text-surface-500 leading-relaxed">
+              Upload a CSV with one row per question. Books and chapters are created automatically if they don't exist.
+              Rows without a question only create the book/chapter. Questions already linked to a chapter are skipped.
+            </p>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={downloadImportTemplate}>
+                <FileDown className="h-4 w-4 mr-1" /> Download Template
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-dashed border-surface-300 bg-surface-50 p-4 text-center">
+            <FileUp className="h-8 w-8 text-surface-400 mx-auto mb-2" />
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              onChange={handleImportFileChange}
+              className="mx-auto text-sm text-surface-600 file:mr-3 file:rounded-xl file:border-0 file:bg-brand-500 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-600"
+            />
+            {importFile && (
+              <p className="mt-2 text-xs text-surface-500">
+                {importFile.name} · {(importFile.size / 1024).toFixed(1)} KB
+              </p>
+            )}
+          </div>
+
+          {importResult && (
+            <div className="rounded-2xl border border-mint-200 bg-mint-50 p-4 text-sm space-y-2">
+              <p className="font-semibold text-mint-700">Import complete</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                <div className="rounded-xl bg-white p-2">
+                  <p className="text-lg font-bold text-surface-900">{importResult.booksCreated}</p>
+                  <p className="text-xs text-surface-500">Books</p>
+                </div>
+                <div className="rounded-xl bg-white p-2">
+                  <p className="text-lg font-bold text-surface-900">{importResult.chaptersCreated}</p>
+                  <p className="text-xs text-surface-500">Chapters</p>
+                </div>
+                <div className="rounded-xl bg-white p-2">
+                  <p className="text-lg font-bold text-surface-900">{importResult.questionsCreated}</p>
+                  <p className="text-xs text-surface-500">Questions</p>
+                </div>
+                <div className="rounded-xl bg-white p-2">
+                  <p className="text-lg font-bold text-surface-900">{importResult.questionsSkipped}</p>
+                  <p className="text-xs text-surface-500">Skipped</p>
+                </div>
+              </div>
+              {importResult.errors.length > 0 && (
+                <div className="max-h-40 overflow-y-auto rounded-xl bg-white p-3">
+                  <p className="text-xs font-semibold text-coral-700 mb-1">
+                    {importResult.errors.length} row error(s):
+                  </p>
+                  <ul className="space-y-1">
+                    {importResult.errors.map((e, idx) => (
+                      <li key={idx} className="text-xs text-surface-600">
+                        Row {e.row}: {e.message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setImportOpen(false)}>Close</Button>
+            <Button onClick={handleRunImport} disabled={!importFile || importBusy}>
+              {importBusy ? 'Importing…' : 'Import CSV'}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

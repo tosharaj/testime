@@ -98,3 +98,8 @@ export class LinkNcertChapterDto {
   @IsArray()
   chapterIds?: string[];
 }
+
+export class ImportNcertDto {
+  @IsString()
+  csv: string;
+}

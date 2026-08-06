@@ -7,10 +7,12 @@ import {
   CreateNcertChapterDto,
   UpdateNcertChapterDto,
   LinkNcertChapterDto,
+  ImportNcertDto,
 } from './ncert.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { UserRole } from '../../common/enums';
 
@@ -94,5 +96,13 @@ export class NcertController {
   @Put('chapters/:id/links')
   setLinks(@Param('id') id: string, @Body() dto: LinkNcertChapterDto) {
     return this.ncertService.setChapterLinks(id, dto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.CONTENT_EDITOR, UserRole.QUESTION_MANAGER)
+  @Post('import')
+  importCsv(@Body() dto: ImportNcertDto, @CurrentUser() user) {
+    return this.ncertService.importCsv(dto.csv, user.id);
   }
 }

@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
+import { parse } from 'csv-parse/sync';
+import { generateSlug } from '../../common/utils/slug';
 import {
   CreateNcertBookDto,
   UpdateNcertBookDto,
@@ -142,6 +144,128 @@ export class NcertService {
     }
 
     return this.getChapterLinks(chapterId);
+  }
+
+  async importCsv(csv: string, userId: string) {
+    const records: any[] = parse(csv, { columns: true, skip_empty_lines: true, trim: true, relax_column_count: true });
+
+    const stats = {
+      booksCreated: 0,
+      chaptersCreated: 0,
+      questionsCreated: 0,
+      questionsSkipped: 0,
+      errors: [] as { row: number; message: string }[],
+    };
+
+    for (let i = 0; i < records.length; i++) {
+      const r = records[i];
+      try {
+        const cls = parseInt(r['class'], 10);
+        const subject = (r.subject || '').trim();
+        const bookName = (r.book || '').trim();
+        const chapterName = (r.chapter || '').trim();
+
+        if (isNaN(cls) || !subject || !bookName || !chapterName) {
+          stats.errors.push({ row: i + 2, message: 'class, subject, book and chapter are required' });
+          continue;
+        }
+
+        let book = await this.prisma.ncertBook.findFirst({ where: { class: cls, name: bookName } });
+        if (!book) {
+          book = await this.prisma.ncertBook.create({
+            data: {
+              class: cls,
+              subject,
+              name: bookName,
+              slug: await this.uniqueBookSlug(bookName),
+              description: (r.description || '').trim() || undefined,
+            },
+          });
+          stats.booksCreated++;
+        }
+
+        let chapter = await this.prisma.ncertChapter.findFirst({ where: { bookId: book.id, name: chapterName } });
+        if (!chapter) {
+          const order = (await this.prisma.ncertChapter.count({ where: { bookId: book.id } })) + 1;
+          chapter = await this.prisma.ncertChapter.create({
+            data: {
+              bookId: book.id,
+              name: chapterName,
+              slug: generateSlug(chapterName),
+              summary: (r.summary || '').trim() || undefined,
+              order,
+            },
+          });
+          stats.chaptersCreated++;
+        }
+
+        const questionText = (r.question || '').trim();
+        if (questionText) {
+          const optionKeys = ['option_a', 'option_b', 'option_c', 'option_d'];
+          const opts = optionKeys.map((k) => (r[k] || '').trim());
+          if (opts.some((o) => !o)) {
+            stats.errors.push({ row: i + 2, message: 'question row is missing one or more options' });
+            continue;
+          }
+
+          const correct = (r.correct || '').trim().toUpperCase();
+          const correctIdx = 'ABCD'.indexOf(correct);
+          if (correctIdx === -1) {
+            stats.errors.push({ row: i + 2, message: 'correct must be A, B, C or D' });
+            continue;
+          }
+
+          const options = opts.map((o, j) => `${String.fromCharCode(65 + j)}. ${o}`);
+          const difficulty = ['easy', 'medium', 'hard'].includes((r.difficulty || '').trim().toLowerCase())
+            ? (r.difficulty || '').trim().toLowerCase()
+            : 'medium';
+
+          const existing = await this.prisma.question.findFirst({ where: { text: questionText } });
+          if (existing) {
+            const alreadyLinked = await this.prisma.ncertChapterLink.findFirst({
+              where: { ncertChapterId: chapter.id, questionId: existing.id },
+            });
+            if (alreadyLinked) {
+              stats.questionsSkipped++;
+              continue;
+            }
+          }
+
+          const question = await this.prisma.question.create({
+            data: {
+              text: questionText,
+              options: JSON.stringify(options),
+              correctAns: options[correctIdx],
+              explanation: (r.explanation || '').trim() || undefined,
+              questionType: 'mcq',
+              difficulty,
+              sourceType: 'NCERT',
+              isPublished: true,
+              createdById: userId,
+            },
+          });
+
+          await this.prisma.ncertChapterLink.create({
+            data: { ncertChapterId: chapter.id, questionId: question.id },
+          });
+          stats.questionsCreated++;
+        }
+      } catch (e: any) {
+        stats.errors.push({ row: i + 2, message: e.message || 'Unexpected error' });
+      }
+    }
+
+    return stats;
+  }
+
+  private async uniqueBookSlug(name: string) {
+    const base = generateSlug(name);
+    let slug = base;
+    let n = 2;
+    while (await this.prisma.ncertBook.findUnique({ where: { slug } })) {
+      slug = `${base}-${n++}`;
+    }
+    return slug;
   }
 
   private async ensureBook(id: string) {
