@@ -146,6 +146,33 @@ export class NcertService {
     return this.getChapterLinks(chapterId);
   }
 
+  private field(r: any, aliases: string[]): string {
+    for (const a of aliases) {
+      const v = r[a];
+      if (v !== undefined && v !== null) return String(v).trim();
+    }
+    return '';
+  }
+
+  private correctIndex(raw: string, opts: string[]): number {
+    const up = raw.toUpperCase().replace(/\s+/g, ' ').trim();
+    if (!up) return -1;
+
+    const compact = up
+      .replace(/^OPTION\s*[-:.]?\s*/, '')
+      .replace(/[.:)]+$/, '')
+      .trim();
+    if (/^[A-D]$/.test(compact)) return 'ABCD'.indexOf(compact);
+    if (/^[1-4]$/.test(compact)) return parseInt(compact, 10) - 1;
+
+    const textMatch = opts.findIndex(
+      (o) => o.replace(/^[A-D]\s*[.)]\s*/i, '').trim().toUpperCase() === up
+    );
+    if (textMatch !== -1) return textMatch;
+
+    return -1;
+  }
+
   async importCsv(csv: string, userId: string) {
     const records: any[] = parse(csv, { columns: true, skip_empty_lines: true, trim: true, relax_column_count: true });
 
@@ -160,10 +187,10 @@ export class NcertService {
     for (let i = 0; i < records.length; i++) {
       const r = records[i];
       try {
-        const cls = parseInt(r['class'], 10);
-        const subject = (r.subject || '').trim();
-        const bookName = (r.book || '').trim();
-        const chapterName = (r.chapter || '').trim();
+        const cls = parseInt(this.field(r, ['class', 'class_no', 'classno']), 10);
+        const subject = this.field(r, ['subject']);
+        const bookName = this.field(r, ['book', 'book_name', 'bookname']);
+        const chapterName = this.field(r, ['chapter', 'chapter_name', 'chaptername']);
 
         if (isNaN(cls) || !subject || !bookName || !chapterName) {
           stats.errors.push({ row: i + 2, message: 'class, subject, book and chapter are required' });
@@ -178,7 +205,7 @@ export class NcertService {
               subject,
               name: bookName,
               slug: await this.uniqueBookSlug(bookName),
-              description: (r.description || '').trim() || undefined,
+              description: this.field(r, ['description']) || undefined,
             },
           });
           stats.booksCreated++;
@@ -192,32 +219,35 @@ export class NcertService {
               bookId: book.id,
               name: chapterName,
               slug: generateSlug(chapterName),
-              summary: (r.summary || '').trim() || undefined,
+              summary: this.field(r, ['summary']) || undefined,
               order,
             },
           });
           stats.chaptersCreated++;
         }
 
-        const questionText = (r.question || '').trim();
+        const questionText = this.field(r, ['question', 'text']);
         if (questionText) {
           const optionKeys = ['option_a', 'option_b', 'option_c', 'option_d'];
-          const opts = optionKeys.map((k) => (r[k] || '').trim());
+          const opts = optionKeys.map((k, j) => this.field(r, [k, `option${j + 1}`, String.fromCharCode(97 + j)]));
           if (opts.some((o) => !o)) {
             stats.errors.push({ row: i + 2, message: 'question row is missing one or more options' });
             continue;
           }
 
-          const correct = (r.correct || '').trim().toUpperCase();
-          const correctIdx = 'ABCD'.indexOf(correct);
+          const correctRaw = this.field(r, ['correct', 'correct_ans', 'correctans', 'answer', 'ans']);
+          const correctIdx = this.correctIndex(correctRaw, opts);
           if (correctIdx === -1) {
-            stats.errors.push({ row: i + 2, message: 'correct must be A, B, C or D' });
+            stats.errors.push({
+              row: i + 2,
+              message: `correct "${correctRaw || '(empty)'}" must be A, B, C or D (or the option text)`,
+            });
             continue;
           }
 
           const options = opts.map((o, j) => `${String.fromCharCode(65 + j)}. ${o}`);
-          const difficulty = ['easy', 'medium', 'hard'].includes((r.difficulty || '').trim().toLowerCase())
-            ? (r.difficulty || '').trim().toLowerCase()
+          const difficulty = ['easy', 'medium', 'hard'].includes(this.field(r, ['difficulty']).toLowerCase())
+            ? this.field(r, ['difficulty']).toLowerCase()
             : 'medium';
 
           const existing = await this.prisma.question.findFirst({ where: { text: questionText } });
@@ -236,7 +266,7 @@ export class NcertService {
               text: questionText,
               options: JSON.stringify(options),
               correctAns: options[correctIdx],
-              explanation: (r.explanation || '').trim() || undefined,
+              explanation: this.field(r, ['explanation']) || undefined,
               questionType: 'mcq',
               difficulty,
               sourceType: 'NCERT',
