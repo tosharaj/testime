@@ -207,17 +207,21 @@ export default function NcertClassPage() {
                       </div>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {book.chapters.map(ch => (
-                          <div key={ch.slug} className="group flex items-start gap-3 rounded-xl border border-surface-100 bg-surface-50/60 p-3 transition-all hover:border-brand-200 hover:bg-white hover:shadow-sm">
+                          <Link
+                            key={ch.slug}
+                            href={`/ncert/practice/${book.slug}/${ch.slug}`}
+                            className="group flex items-start gap-3 rounded-xl border border-surface-100 bg-surface-50/60 p-3 transition-all hover:border-brand-200 hover:bg-white hover:shadow-sm"
+                          >
                             <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-100 text-surface-400 group-hover:bg-brand-50 group-hover:text-brand-500 transition-colors">
                               <FileText className="h-4 w-4" />
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-sm font-semibold text-surface-900 truncate">{ch.name}</span>
+                                <span className="text-sm font-semibold text-surface-900 truncate group-hover:text-brand-600 transition-colors">{ch.name}</span>
                               </div>
                               <p className="text-xs text-surface-500 line-clamp-2">{ch.summary}</p>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </div>
                       <div className="mt-4 grid grid-cols-3 gap-2">
@@ -225,11 +229,19 @@ export default function NcertClassPage() {
                         <div className="flex items-center justify-center gap-1.5 rounded-lg bg-amber-50 py-2 text-xs font-semibold text-amber-700"><BarChart3 className="h-4 w-4" />{book.chapters.reduce((n, c) => n + c.pyqCount, 0)} PYQs</div>
                         <div className="flex items-center justify-center gap-1.5 rounded-lg bg-brand-50 py-2 text-xs font-semibold text-brand-700"><ListChecks className="h-4 w-4" />{book.chapters.reduce((n, c) => n + c.testCount, 0)} Tests</div>
                       </div>
-                      <div className="mt-4 flex flex-wrap gap-2 border-t border-surface-100 pt-4">
-                        <Button size="sm" variant="outline"><BrainCircuit className="h-4 w-4 mr-1" /> Practice MCQs</Button>
-                        <Button size="sm" variant="outline"><BookCheck className="h-4 w-4 mr-1" /> View Notes</Button>
-                        <Button size="sm"><Sparkles className="h-4 w-4 mr-1" /> Take Test</Button>
-                      </div>
+                      {book.chapters[0] && (
+                        <div className="mt-4 flex flex-wrap gap-2 border-t border-surface-100 pt-4">
+                          <Link href={`/ncert/practice/${book.slug}/${book.chapters[0].slug}`}>
+                            <Button size="sm" variant="outline"><BrainCircuit className="h-4 w-4 mr-1" /> Practice MCQs</Button>
+                          </Link>
+                          <Link href={`/ncert/practice/${book.slug}/${book.chapters[0].slug}`}>
+                            <Button size="sm" variant="outline"><BookCheck className="h-4 w-4 mr-1" /> View Notes</Button>
+                          </Link>
+                          <Link href={`/ncert/practice/${book.slug}/${book.chapters[0].slug}`}>
+                            <Button size="sm"><Sparkles className="h-4 w-4 mr-1" /> Take Test</Button>
+                          </Link>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}

@@ -160,6 +160,36 @@ export interface ImportResult {
   errors: { row: number; message: string }[];
 }
 
+export interface PracticeQuestion {
+  id: string;
+  text: string;
+  options: string[];
+  correctAns: string;
+  explanation?: string | null;
+  difficulty?: string | null;
+}
+
+export interface ChapterTest {
+  id: string;
+  slug: string;
+  title: string;
+  duration: number;
+  totalMarks: number;
+  questionCount: number;
+}
+
+export interface ChapterQuiz {
+  chapter: {
+    id: string;
+    name: string;
+    slug: string;
+    summary?: string | null;
+    book: { name: string; slug: string; class: number; subject: string };
+  };
+  questions: PracticeQuestion[];
+  tests: ChapterTest[];
+}
+
 export const ncertApi = {
   getBooks: (params?: { class?: number; includeChapters?: boolean }) =>
     request<NcertBook[]>(`/ncert/books${toQuery(params)}`),
@@ -189,6 +219,10 @@ export const ncertApi = {
       method: 'POST',
       body: JSON.stringify({ csv }),
     }),
+
+  getChapterQuiz: (bookSlug: string, chapterSlug: string) =>
+    request<ChapterQuiz>(`/ncert/books/${bookSlug}/chapters/${chapterSlug}/quiz`),
+  getTest: (id: string) => request<any>(`/tests/${id}`),
 
   getQuestions: (params?: { limit?: number; search?: string }) =>
     request<{ data?: NcertQuestion[] }>(`/questions${toQuery({ limit: 500, ...params })}`),

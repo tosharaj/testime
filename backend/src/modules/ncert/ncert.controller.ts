@@ -28,6 +28,12 @@ export class NcertController {
     return this.ncertService.findBooks(parsed, includeChapters === 'true' || includeChapters === '1');
   }
 
+  @Public()
+  @Get('books/:bookSlug/chapters/:chapterSlug/quiz')
+  getChapterQuiz(@Param('bookSlug') bookSlug: string, @Param('chapterSlug') chapterSlug: string) {
+    return this.ncertService.getChapterQuiz(bookSlug, chapterSlug);
+  }
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN, UserRole.CONTENT_EDITOR, UserRole.QUESTION_MANAGER)

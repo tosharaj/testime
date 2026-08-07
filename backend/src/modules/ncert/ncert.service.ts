@@ -288,6 +288,69 @@ export class NcertService {
     return stats;
   }
 
+  async getChapterQuiz(bookSlug: string, chapterSlug: string) {
+    const book = await this.prisma.ncertBook.findUnique({ where: { slug: bookSlug } });
+    if (!book) throw new NotFoundException('NCERT book not found');
+
+    const chapter = await this.prisma.ncertChapter.findFirst({ where: { bookId: book.id, slug: chapterSlug } });
+    if (!chapter) throw new NotFoundException('NCERT chapter not found');
+
+    const links = await this.prisma.ncertChapterLink.findMany({
+      where: { ncertChapterId: chapter.id, question: { isPublished: true } },
+      include: { question: true },
+    });
+
+    const tests = await this.prisma.test.findMany({
+      where: { ncertChapterId: chapter.id, isPublished: true },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        duration: true,
+        totalMarks: true,
+        _count: { select: { questions: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      chapter: {
+        id: chapter.id,
+        name: chapter.name,
+        slug: chapter.slug,
+        summary: chapter.summary,
+        book: { name: book.name, slug: book.slug, class: book.class, subject: book.subject },
+      },
+      questions: links
+        .filter((l) => l.question)
+        .map((l) => {
+          const q = l.question!;
+          let options: string[] = [];
+          try {
+            options = JSON.parse(q.options);
+          } catch {
+            options = [];
+          }
+          return {
+            id: q.id,
+            text: q.text,
+            options,
+            correctAns: q.correctAns,
+            explanation: q.explanation,
+            difficulty: q.difficulty,
+          };
+        }),
+      tests: tests.map((t: any) => ({
+        id: t.id,
+        slug: t.slug,
+        title: t.title,
+        duration: t.duration,
+        totalMarks: t.totalMarks,
+        questionCount: t._count?.questions ?? 0,
+      })),
+    };
+  }
+
   private async uniqueBookSlug(name: string) {
     const base = generateSlug(name);
     let slug = base;
