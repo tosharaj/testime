@@ -92,7 +92,18 @@ export class NcertService {
     const links = await this.prisma.ncertChapterLink.findMany({
       where: { ncertChapterId: chapterId },
       include: {
-        question: { select: { id: true, text: true, difficulty: true } },
+        question: {
+          select: {
+            id: true,
+            text: true,
+            options: true,
+            correctAns: true,
+            explanation: true,
+            difficulty: true,
+            sourceType: true,
+            isPublished: true,
+          },
+        },
         note: { select: { id: true, title: true, summary: true } },
       },
     });

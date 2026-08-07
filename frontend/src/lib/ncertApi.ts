@@ -72,7 +72,12 @@ export interface NcertBook {
 export interface NcertLinkedQuestion {
   id: string;
   text: string;
+  options?: string | null;
+  correctAns?: string | null;
+  explanation?: string | null;
   difficulty?: string | null;
+  sourceType?: string | null;
+  isPublished?: boolean;
 }
 
 export interface NcertLinkedNote {

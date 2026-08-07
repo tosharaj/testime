@@ -10,7 +10,7 @@ import {
   CheckCircle, AlertCircle, Unlink, ChevronLeft, RefreshCw, ServerOff, Layers, ListChecks,
   ClipboardList, FileText, Clock, Upload, FileDown, FileUp
 } from 'lucide-react';
-import { ncertApi, slugify, NcertBook, NcertChapter, NcertQuestion, NcertTest, NcertNote, ImportResult } from '@/lib/ncertApi';
+import { ncertApi, slugify, NcertBook, NcertChapter, NcertQuestion, NcertLinkedQuestion, NcertTest, NcertNote, ImportResult } from '@/lib/ncertApi';
 
 const CLASSES = [6, 7, 8, 9, 10, 11, 12];
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
@@ -44,8 +44,9 @@ export default function AdminNcertPage() {
   const [bookForm, setBookForm] = useState<BookForm>(emptyBookForm);
   const [chapterModal, setChapterModal] = useState<{ open: boolean; edit?: NcertChapter }>({ open: false });
   const [chapterForm, setChapterForm] = useState<ChapterForm>(emptyChapterForm);
-  const [questionModal, setQuestionModal] = useState<{ open: boolean; chapter?: NcertChapter }>({ open: false });
+  const [questionModal, setQuestionModal] = useState<{ open: boolean; chapter?: NcertChapter; edit?: NcertQuestion }>({ open: false });
   const [questionForm, setQuestionForm] = useState<QuestionForm>(emptyQuestionForm);
+  const [manageModal, setManageModal] = useState<{ open: boolean; chapter?: NcertChapter; questions: NcertLinkedQuestion[] }>({ open: false, questions: [] });
   const [linkModal, setLinkModal] = useState<{ chapter: NcertChapter; questionIds: string[] } | null>(null);
   const [linkSearch, setLinkSearch] = useState('');
 
@@ -254,9 +255,40 @@ export default function AdminNcertPage() {
   };
 
   // ─── QUESTION ─────────────────────────────────────────────────────────────
-  const openQuestionModal = (chapter: NcertChapter) => {
-    setQuestionModal({ open: true, chapter });
-    setQuestionForm(emptyQuestionForm);
+  const stripOptionPrefix = (opt: string) => opt.replace(/^[A-D][.)]\s*/i, '');
+
+  const parseQuestionForEdit = (q: NcertQuestion) => {
+    let options: string[] = [];
+    try {
+      options = JSON.parse(q.options ?? '[]');
+    } catch {
+      options = [];
+    }
+    const clean = options.map(stripOptionPrefix);
+    let correctIndex = 0;
+    if (q.correctAns) {
+      const idx = options.findIndex((o) => o === q.correctAns);
+      correctIndex = idx >= 0 ? idx : clean.findIndex((o) => o === stripOptionPrefix(q.correctAns!));
+      if (correctIndex < 0) correctIndex = 0;
+    }
+    return { text: q.text, options: clean, correctIndex, explanation: q.explanation ?? '', difficulty: q.difficulty ?? 'medium' };
+  };
+
+  const openQuestionModal = (chapter: NcertChapter, edit?: NcertQuestion) => {
+    setQuestionModal({ open: true, chapter, edit });
+    setQuestionForm(edit ? parseQuestionForEdit(edit) : emptyQuestionForm);
+  };
+
+  const openManageQuestions = async (chapter: NcertChapter) => {
+    setBusy(true);
+    try {
+      const links = await ncertApi.getChapterLinks(chapter.id);
+      setManageModal({ open: true, chapter, questions: links.questions ?? [] });
+    } catch (e: any) {
+      showNotice(e.message, true);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleSaveQuestion = async () => {
@@ -268,8 +300,8 @@ export default function AdminNcertPage() {
     }
     setBusy(true);
     try {
-      const options = questionForm.options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o.trim()}`);
-      const created = await ncertApi.createQuestion({
+      const options = questionForm.options.map((o) => o.trim());
+      const payload = {
         text: questionForm.text.trim(),
         options: JSON.stringify(options),
         correctAns: options[questionForm.correctIndex],
@@ -277,13 +309,41 @@ export default function AdminNcertPage() {
         difficulty: questionForm.difficulty,
         sourceType: 'NCERT',
         isPublished: true,
-      });
+      };
+      if (questionModal.edit) {
+        await ncertApi.updateQuestion(questionModal.edit.id, payload);
+        setQuestionModal({ open: false });
+        await load(activeClass);
+        if (manageModal.open) {
+          const links = await ncertApi.getChapterLinks(chapter.id);
+          setManageModal((m) => (m ? { ...m, questions: links.questions ?? [] } : m));
+        }
+        showNotice('Question updated.');
+      } else {
+        const created = await ncertApi.createQuestion(payload);
+        const links = await ncertApi.getChapterLinks(chapter.id);
+        await ncertApi.setChapterLinks(chapter.id, { questionIds: [...links.questionIds, created.id] });
+        await load(activeClass);
+        setQuestions((prev) => (prev.some((q) => q.id === created.id) ? prev : [created, ...prev]));
+        setQuestionModal({ open: false });
+        showNotice('Question created and linked to the chapter.');
+      }
+    } catch (e: any) {
+      showNotice(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDeleteQuestion = async (q: NcertLinkedQuestion, chapter: NcertChapter) => {
+    if (!window.confirm(`Delete this question?\n\n${q.text.slice(0, 120)}`)) return;
+    setBusy(true);
+    try {
+      await ncertApi.deleteQuestion(q.id);
       const links = await ncertApi.getChapterLinks(chapter.id);
-      await ncertApi.setChapterLinks(chapter.id, { questionIds: [...links.questionIds, created.id] });
+      setManageModal((m) => (m ? { ...m, questions: links.questions ?? [] } : m));
       await load(activeClass);
-      setQuestions((prev) => (prev.some((q) => q.id === created.id) ? prev : [created, ...prev]));
-      setQuestionModal({ open: false });
-      showNotice('Question created and linked to the chapter.');
+      showNotice('Question deleted.');
     } catch (e: any) {
       showNotice(e.message, true);
     } finally {
@@ -667,6 +727,13 @@ export default function AdminNcertPage() {
                             <FileText className="h-4 w-4" />
                           </button>
                           <button
+                            onClick={() => openManageQuestions(ch)}
+                            className="p-2 text-surface-400 hover:text-mint-600 rounded-xl hover:bg-mint-50 transition-colors"
+                            title="Manage MCQs"
+                          >
+                            <BrainCircuit className="h-4 w-4" />
+                          </button>
+                          <button
                             onClick={() => openQuestionModal(ch)}
                             className="p-2 text-surface-400 hover:text-mint-600 rounded-xl hover:bg-mint-50 transition-colors"
                             title="Add Question"
@@ -864,8 +931,13 @@ export default function AdminNcertPage() {
       </Modal>
 
       {/* ── QUESTION MODAL ───────────────────────────────────────────────── */}
-      <Modal isOpen={questionModal.open} onClose={() => setQuestionModal({ open: false })} title={`Add MCQ — ${questionModal.chapter?.name ?? ''}`} size="lg">
+      <Modal isOpen={questionModal.open} onClose={() => setQuestionModal({ open: false })} title={`${questionModal.edit ? 'Edit' : 'Add'} MCQ — ${questionModal.chapter?.name ?? ''}`} size="lg">
         <div className="space-y-4">
+          {questionModal.edit && (
+            <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
+              Editing existing question. Saving will update the question everywhere it is used.
+            </p>
+          )}
           <div className={fieldCls}>
             <label className="block text-sm font-medium text-surface-700">Question</label>
             <textarea value={questionForm.text} onChange={(e) => setQuestionForm((f) => ({ ...f, text: e.target.value }))} rows={3} className={inputCls} placeholder="Type the question…" />
@@ -914,9 +986,84 @@ export default function AdminNcertPage() {
           </div>
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setQuestionModal({ open: false })}>Cancel</Button>
-            <Button onClick={handleSaveQuestion} disabled={busy}>{busy ? 'Saving…' : 'Create & Link'}</Button>
+            <Button onClick={handleSaveQuestion} disabled={busy}>{busy ? 'Saving…' : questionModal.edit ? 'Save Changes' : 'Create & Link'}</Button>
           </div>
         </div>
+      </Modal>
+
+      {/* ── MANAGE MCQs MODAL ────────────────────────────────────────────── */}
+      <Modal isOpen={manageModal.open} onClose={() => setManageModal({ open: false, questions: [] })} title={`Manage MCQs — ${manageModal.chapter?.name ?? ''}`} size="lg">
+        {manageModal.chapter && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm text-surface-500">{manageModal.questions.length} linked question(s). Edit to fix spelling mistakes or content.</p>
+              <Button size="sm" onClick={() => openQuestionModal(manageModal.chapter!)}>
+                <Plus className="h-4 w-4 mr-1" /> Add Question
+              </Button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto space-y-3">
+              {manageModal.questions.length === 0 && (
+                <div className="text-center py-10">
+                  <BrainCircuit className="h-10 w-10 text-surface-300 mx-auto mb-3" />
+                  <p className="text-sm text-surface-500 font-medium">No MCQs linked to this chapter yet.</p>
+                </div>
+              )}
+              {manageModal.questions.map((q, qi) => {
+                let opts: string[] = [];
+                try {
+                  opts = JSON.parse(q.options ?? '[]');
+                } catch {
+                  opts = [];
+                }
+                const correctIndex = q.correctAns ? opts.findIndex((o) => o === q.correctAns) : -1;
+                return (
+                  <div key={q.id} className="rounded-xl border border-surface-200 overflow-hidden">
+                    <div className="flex items-start justify-between gap-3 p-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-surface-900 leading-relaxed">
+                          <span className="text-xs text-surface-400 mr-2">{qi + 1}.</span>
+                          {q.text}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => openQuestionModal(manageModal.chapter!, q)}
+                          className="p-2 text-surface-400 hover:text-amber-600 rounded-xl hover:bg-amber-50 transition-colors"
+                          title="Edit Question"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteQuestion(q, manageModal.chapter!)}
+                          className="p-2 text-surface-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors"
+                          title="Delete Question"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="px-4 pb-4 grid gap-1.5 sm:grid-cols-2">
+                      {opts.map((o, oi) => (
+                        <div
+                          key={oi}
+                          className={`rounded-lg border px-3 py-1.5 text-xs ${
+                            oi === correctIndex ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-surface-200 text-surface-600'
+                          }`}
+                        >
+                          <span className="font-bold mr-1.5">{String.fromCharCode(65 + oi)}.</span>
+                          {o}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex items-center justify-end">
+              <Button variant="outline" onClick={() => setManageModal({ open: false, questions: [] })}>Close</Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* ── LINK MODAL ───────────────────────────────────────────────────── */}
